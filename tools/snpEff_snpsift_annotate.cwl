@@ -16,25 +16,21 @@ arguments:
     valueFrom: >-
       set -eo pipefail
 
-      tar -xzvf
-      $(inputs.ref_tar_gz.path)
-      && cwd=`pwd`
+      tar -xzvf $(inputs.ref_tar_gz.path) -C /snpEff/
       && java -Xms16g -Xmx24g -jar /snpEff/snpEff.jar
-      -dataDir $cwd
       -nodownload
       -t
-      hg38
+      $(inputs.reference_name)
       $(inputs.input_vcf.path)
-      ${ if (inputs.dbnsfp_txt == 'null') {return ''} else {return '| java -jar /snpEff/SnpSift.jar dbnsfp -db '+inputs.dbnsfp_txt.path}}
-      ${ if (inputs.gwas_catalog_txt == 'null') {return ''} else {return '| java -jar /snpEff/SnpSift.jar gwasCat -db '+inputs.gwas_catalog_txt.path}}
-      ${ if (inputs.db_vcfs == 'null') {return ''}
-        else {
+      ${ if (inputs.dbnsfp_txt) {return '| java -jar /snpEff/SnpSift.jar dbnsfp -db '+inputs.dbnsfp_txt.path+' - '} else {return ''}}
+      ${ if (inputs.gwas_catalog_txt) {return '| java -jar /snpEff/SnpSift.jar gwasCat -db '+inputs.gwas_catalog_txt.path+' - '} else {return ''}}
+      ${ if (inputs.db_vcfs) {
           var cmd = ''
           for (var i=0; i < inputs.db_vcfs.length; i++){
-            cmd += ' | java -jar /snpEff/SnpSift.jar annotate -noDownload -db ' + inputs.db_vcfs[i].path
+            cmd += ' | java -jar /snpEff/SnpSift.jar annotate -noDownload -db ' + inputs.db_vcfs[i].path + ' - '
           }
           return cmd
-        }
+        } else { return ''}
       }
       | bgzip -c > $(inputs.output_basename).$(inputs.tool_name).snpEff.vcf.gz
       && tabix $(inputs.output_basename).$(inputs.tool_name).snpEff.vcf.gz
@@ -44,6 +40,12 @@ inputs:
   gwas_catalog_txt: { type: File? }
   db_vcfs: { type: ['null', 'File[]'], secondaryFiles: [.tbi] } 
   input_vcf: { type: File,  secondaryFiles: [.tbi] }
+  reference_name:
+    type:
+      - type: enum
+        symbols:
+          - hg38
+          - GRCh38.86
   output_basename: string
   tool_name: string
 outputs:
