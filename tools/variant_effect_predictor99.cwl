@@ -45,7 +45,8 @@ arguments:
       --canonical
       --protein
       --assembly GRCh38
-      ${if(inputs.cache) {return "--dir_cache $PWD --cache --merged --check_existing --af_1kg --af_esp --af_gnomad"} else {return ""}}
+      ${if(inputs.cache) {return "--dir_cache $PWD --cache --merged"} else {return ""}}
+      ${if(inputs.run_cache_dbs) {return "--check_existing --af_1kg --af_esp --af_gnomad"} else { return ""}}
       ${if(inputs.reference) { return "--hgvs --fasta "+inputs.reference.path} else {return ""}}
       ${if(inputs.cadd_indels && inputs.cadd_snvs) {return "--plugin CADD,"+inputs.cadd_snvs.path+","+inputs.cadd_indels.path} else {return ""}}
       ${if(inputs.dbnsfp) {return "--plugin dbNSFP,"+inputs.dbnsfp.path+",ALL"} else {return ""}}
@@ -61,6 +62,7 @@ inputs:
   output_basename: string
   reference: { type: File?,  secondaryFiles: [.fai,.gzi], label: Fasta genome assembly with indexes }
   cache: { type: File?, label: tar gzipped cache from ensembl/local converted cache }
+  run_cache_dbs: { type: boolean, label: run the additional dbs in cache }
   cadd_indels: { type: File?, secondaryFiles: [.tbi] }
   cadd_snvs: { type: File?, secondaryFiles: [.tbi] }
   dbnsfp: { type: File?, secondaryFiles: [.tbi,^.readme.txt] }
