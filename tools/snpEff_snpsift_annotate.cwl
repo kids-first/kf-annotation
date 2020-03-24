@@ -5,8 +5,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 24000
-    coresMin: 16
+    ramMin: 16000
+    coresMin: 8
   - class: DockerRequirement
     dockerPull: 'kfdrc/snpeff:4_3t'
 baseCommand: ["/bin/bash", "-c"]
@@ -17,7 +17,7 @@ arguments:
       set -eo pipefail
 
       tar -xzvf $(inputs.ref_tar_gz.path) -C /snpEff/
-      && java -Xms16g -Xmx24g -jar /snpEff/snpEff.jar
+      && java -jar /snpEff/snpEff.jar
       -nodownload
       -t
       $(inputs.reference_name)
