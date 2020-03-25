@@ -1,6 +1,33 @@
 cwlVersion: v1.0
 class: CommandLineTool
 id: snpsift_annotate
+label: SnpSift
+doc: |
+  Simplified descrition of what this tool does:
+    1. Run SnpEff on input VCF
+    2. BGZIP output VCF
+    3. TABIX ouptut VCF
+
+  SnpSift Parameters:
+    1. v: Verbose logging
+    2. a: In cases where variants do not have annotations in the database the tool will report an empty value (FIELD=.) rather than no annotation
+    3. info: Comma separated list of INFO fields from the reference database the tool will use to annotate matching listings
+    4. f: Same as "info" but specficially used when the tool is used running in dbnsfp mode
+    5. db: The reference database file used for annotating the input
+
+  An example run of this tool will use a command like this:
+    /bin/bash -c
+    set -eo pipefail 
+    java -jar /snpEff/SnpSift.jar 
+      annotate 
+      -v 
+      -a 
+      -info fields-string-value 
+      -db /path/to/db_file.ext 
+      /path/to/input_vcf.ext | 
+    bgzip -c > output_basename-string-value.SnpSift.db_name-string-value.snpEff.vcf.gz && 
+    tabix output_basename-string-value.SnpSift.db_name-string-value.snpEff.vcf.gz
+
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -27,28 +54,16 @@ arguments:
       $(inputs.input_vcf.path)
       | bgzip -c > $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
       && tabix $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
+
 inputs:
-  mode:
-    type:
-      type: enum
-      symbols:
-        - annotate
-        - dbnsfp
-        - gwasCat
-  db_file: { type: File, secondaryFiles: [.tbi] }
-  db_name: string
-  fields:
-    type: string?
-    doc: Comma separated list of fields to include.
-  input_vcf: File
-  input_tbi: File
-  output_basename: string
+  mode: { type: { type: enum, symbols: [annotate, dbnsfp, gwasCat] }, doc: Mode of SnpSift to run. }
+  db_file: { type: File, secondaryFiles: [.tbi], doc: Reference database for annotating the input. }
+  db_name: { type: string, doc: Name of the database being used. }
+  fields: { type: string?, doc: Comma-separated list of fields from the database that will be used as annotations. }
+  input_vcf: { type: File, doc: VCF file to be annotated. }
+  input_tbi: { type: File, doc: TBI file associated with the VCF. }
+  output_basename: { type: string, doc: String that will be used in the output filenames. } 
+
 outputs:
-  output_vcf:
-    type: File
-    outputBinding:
-      glob: '*.vcf.gz'
-  output_tbi:
-    type: File
-    outputBinding:
-      glob: '*.vcf.gz.tbi'
+  output_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' } }
+  output_tbi: { type: File, outputBinding: { glob: '*.vcf.gz.tbi' } }

@@ -1,6 +1,48 @@
 cwlVersion: v1.0
 class: CommandLineTool
 id: kfdrc-annovar
+label: Annovar
+doc: |
+  Simplified descrition of what this tool does:
+    1. Untar the cache
+    2. If you are running additional databases, untar those as well
+    3. Run Annovar
+    4. bgzip output VCF
+    5. tavix output VCF.GZ
+    6. bgzip output TXT
+
+  Annovar parameters:
+    1. out: the relative path of the output file
+    2. buildver: the genome reference build
+    3. protocol: list of the names of the protocols to be used in annotation of the input
+    4. operation: list of annotation types to be used corresponding to each of the protocols
+    5. argument: list of additional arguments to be used corresponding to each of the protocols
+    6. vcfinput: the input is a properly formatted VCF and the program should return a properly formatted VCF as output
+    7. thread: the number of threads this program may use
+    8. remove: Remove intermediate files
+    9. nastring: Replace NA with given value
+
+  An example run of this tool will use a command like this:
+    /bin/bash -c
+    set -eo pipefail
+    tar xvf /path/to/cache.ext &&
+    tar xvf /path/to/additional_dbs-1.ext -C humandb &&
+    tar xvf /path/to/additional_dbs-2.ext -C humandb &&
+    perl /home/TOOLS/tools/annovar/current/bin/table_annovar.pl
+      /path/to/input_vcf.ext
+      humandb
+      -out output_basename-string-value
+      -buildver hg38
+      -protocol ensGene,dbnsfp35c,clinvar_20190305,dbscsnv11,cosmic90_coding,1000g2015aug_all,esp6500siv2_all,exac03,gnomad30_genome
+      -operation g,f,f,f,f,f,f,f,f
+      -argument '--hgvs --splicing_threshold 10',,,,,,,,
+      -vcfinput
+      -thread 16
+      -remove
+      -nastring . &&
+    bgzip output_basename-string-value.hg38_multianno.vcf &&
+    tabix -p vcf output_basename-string-value.hg38_multianno.vcf.gz &&
+    bgzip output_basename-string-value.hg38_multianno.txt
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -45,28 +87,14 @@ arguments:
       bgzip $(inputs.output_basename).hg38_multianno.txt
 
 inputs:
-  cache: File
-  additional_dbs: File[]
-  protocol_name:
-    type:
-      type: enum
-      symbols: [ensGene, knownGene, refGene]
-  input_vcf:
-    type: File
-    secondaryFiles: [.tbi]
-  run_dbs: boolean
-  output_basename: string
+  cache: { type: File, doc: TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations }
+  additional_dbs: { type: File[]?, doc: List of TAR GZ files containing the custom Annovar databases files for dbnsfp35c, clinvar_20190305, dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, exac03, and gnomad30_genome } 
+  protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: Gene-based annotation to be used in this run of the tool }
+  input_vcf: { type: File, secondaryFiles: [.tbi], doc: VCF file (with associated index) to be annotated }
+  run_dbs: { type: boolean, doc: Should the additional dbs be processed in this run of the tool? true/false }
+  output_basename: { type: string, doc: String that will be used in the output filenames }
 
 outputs:
-  anno_txt:
-    type: File
-    outputBinding:
-      glob: $(inputs.output_basename).hg38_multianno.txt.gz
-  anno_vcf:
-    type: File
-    outputBinding:
-      glob: $(inputs.output_basename).hg38_multianno.vcf.gz
-  anno_tbi:
-    type: File
-    outputBinding:
-      glob: $(inputs.output_basename).hg38_multianno.vcf.gz.tbi
+  anno_txt: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.txt.gz } }
+  anno_vcf: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.vcf.gz } }
+  anno_tbi: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.vcf.gz.tbi } }
