@@ -43,13 +43,13 @@ Custom annotations in the form of BigWig files can also be used. As of yet, only
 SnpSift provides two dedicated annotation methods in the form of dbnsfp and gwasCat; the rest of the databases are processed using `annotate` on a VCF. The following are links to the databases or places down download them:
 - [Clinvar](https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz)
 - [COSMIC](https://cancer.sanger.ac.uk/cosmic)
-- [dbNSPFP](ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFP4.0a.zip)
+- dbNSFP: ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFP4.0a.zip
 - [dbSNP](https://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/00-All.vcf.gz)
 - [ESP6500](http://evs.gs.washington.edu/evs_bulk_data/ESP6500SI-V2-SSA137.GRCh38-liftover.snps_indels.vcf.tar.gz)
 - [ExAC](https://storage.googleapis.com/gnomad-public/legacy/exac_browser/ExAC.r1.sites.vep.vcf.gz)
 - [Gnomad](https://storage.googleapis.com/gnomad-public/release/3.0/vcf/genomes/gnomad.genomes.r3.0.sites.vcf.bgz)
 - [GWASCat](https://www.ebi.ac.uk/gwas/api/search/downloads/alternative)
-- [UK10K](ftp://ngs.sanger.ac.uk/production/uk10k/UK10K_COHORT/REL-2012-06-02/UK10K_COHORT.20160215.sites.vcf.gz)
+- UK10K: ftp://ngs.sanger.ac.uk/production/uk10k/UK10K_COHORT/REL-2012-06-02/UK10K_COHORT.20160215.sites.vcf.gz
 - [1000G](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/integrated_sv_map/ALL.wgs.mergedSV.v8.20130502.svs.genotypes.vcf.gz)
 
 Note that some of these are very large and cumbersome. In particular we found that the gnomad and dbSNP databases were either untenably large or took too long to process. As a result, those two were excluded from our SnpEff runs.
