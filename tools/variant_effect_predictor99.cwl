@@ -133,14 +133,14 @@ arguments:
 
 inputs:
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
-  reference: { type: File?,  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
-  cache: { type: File?, doc: "tar gzipped cache from ensembl/local converted cache" }
+  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   run_cache_dbs: { type: boolean, doc: "Run the additional dbs in cache" }
-  cadd_indels: { type: File?, secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
-  cadd_snvs: { type: File?, secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
-  dbnsfp: { type: File?, secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
-  dbscsnv: { type: File?, secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing dbscSNV annotations" }
-  phylop: { type: File?, doc: "BigWig file containing PhyloP annotation information" }
+  cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+  dbscsnv: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing dbscSNV annotations" }
+  phylop: { type: 'File?', doc: "BigWig file containing PhyloP annotation information" }
   output_basename: { type: string, doc: "String that will be used in the output filenames" }
   tool_name: { type: string, doc: "Tool name to be used in output filenames" }
 
@@ -148,4 +148,4 @@ outputs:
   output_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' } }
   output_tbi: { type: File, outputBinding: { glob: '*.vcf.gz.tbi' } }
   output_html: { type: File, outputBinding: { glob: '*.html' } }
-  warn_txt: { type: File?, outputBinding: { glob: '*.txt' } }
+  warn_txt: { type: 'File?', outputBinding: { glob: '*.txt' } }

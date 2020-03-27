@@ -19,9 +19,9 @@ inputs:
   gwas_cat_db_file: File
   dbnsfp_db_file: {type: File, secondaryFiles: [.tbi]}
   dbnsfp_fields: string
-  vcf_db_files: 'File[]'
-  vcf_db_names: 'string[]'
-  vcf_fields: 'string[]'
+  vcf_db_files: File[]
+  vcf_db_names: string[]
+  vcf_fields: string[]
   
 outputs:
   base_vcf:
@@ -34,7 +34,7 @@ outputs:
     type: File
     outputSource: snpsift_gwascat/output_vcf
   vcf_vcfs:
-    type: 'File[]'
+    type: File[]
     outputSource: snpsift_vcfdbs/output_vcf 
 
 steps:
