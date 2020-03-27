@@ -1,5 +1,5 @@
 # kf-annotation
-Variant caller annotation repository. Outputs from variant getmline and somatic callers need annotation to add context to calls
+Variant caller annotation repository. Outputs from variant germline and somatic callers need annotation to add context to calls
 
 ### Tools
 1) [Annovar](http://annovar.openbioinformatics.org/en/latest/) 2019Oct24
@@ -54,3 +54,76 @@ To run VEP without additional DBs, simply set `run_cache_dbs` to `false` and do 
 - `phylop`
 #### With DBs
 As many or as few extra databases you provide will be used in annotation; additionally, make sure to set `run_cache_dbs` to `true` as this will add the additional annotations from databases that come with the cache.. All extra databases but phylop are used as plugins. The creation of these files is detailed in the documentation for the plugins on the VEP github.
+
+### Running [WGSA](https://github.com/kids-first/kf-annotation/blob/master/tools/wgsa_annotate.cwl)
+This is a comprehensive annotation package that has a precomputed reference for all gene models from ANNOVAR, snpEff, and VEP for all possible snps in hg38 and hg19.  For indels, it will run all three tools (if called for in the config file), as well as many additional databases, most of which come from [here](http://web.corral.tacc.utexas.edu/WGSAdownload/).
+
+#### Inputs:
+
+```yaml
+inputs:
+  resources: {type: 'File[]', doc: "Reference tar balls needed for WGSA. Min needed wgsa_hg38_resource.tgz, crossover.tgz"}
+  annovar_ref: {type: File, doc: "Basic annovar wgsa refs tar ball"}
+  snpeff_ref: {type: File, doc: "data tar ball for snpEff containing HG38 nad GRCh38 refs"}
+  vep_ref: {type: File, doc: "standard vep cache file"}
+  vep_fasta: {type: File, secondaryFiles: ['.fai', '.gzi'], doc: "top level fasta file vep copies when installing"}
+  input_vcf:
+    type: File
+    secondaryFiles: [.tbi]
+  settings: {type: File, doc: "Settings file with tool/annotation: (s,i,b,n)"}
+  output_basename: string
+  tool_name: {type: string, doc: "Meant to helpful to indicate what tools the calls came from"}
+```
+
+Resource files recommended for a full snp, indel, and D3b recommnded database run for hg38:
+ - precomputed_hg38.tgz # drop if doing indel only
+ - dbSNP.tgz
+ - GWAS_catalog.tgz
+ - wgsa_hg38_resource.tgz
+ - 1000Gp3.tgz
+ - UK10K.tgz
+ - ESP6500.tgz
+ - ExACr0.3.tgz
+ - dbNSFP.tgz
+ - CADDv1.4.tgz
+ - clinvar.tgz
+ - wgsa_hg19_resource.tgz
+ - COSMIC_hg38.tgz
+ - PhyloP_hg38.tgz
+ - gnomAD.tgz
+ - crossmap.tgz
+
+In general, if you disbale a database in the settings file, you can omit loading the file in the resources array.
+
+ Recommended settings file for running recommended databases can be found in the `references/wgsa_all_recommended_db_settings.txt` file.
+
+ #### Outputs:
+
+ ```yaml
+ outputs:
+  output_annot:
+    type: File
+    outputBinding:
+      glob: '*.wgsa_annotated.txt.*.gz'
+    doc: "Merge annotated table"
+  output_desc:
+    type: 'File[]'
+    outputBinding:
+      glob: '*.description.txt'
+    doc: "Description of databases run"
+  job_stdout:
+    type: File
+    outputBinding:
+      glob: '*.stdout'
+    doc: "Stdout output for debugging"
+  runtime_settings:
+    type: File
+    outputBinding:
+      glob: '*.settings.txt'
+    doc: "Run time settings file for debugging"
+  runtime_shell_script:
+    type: File
+    outputBinding:
+      glob: '*.settings.txt.sh'
+    doc: "WGSA-generated shell script"
+```

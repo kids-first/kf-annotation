@@ -65,9 +65,9 @@ arguments:
       bash $(inputs.output_basename).$(inputs.tool_name).settings.txt.sh | tee > $(inputs.output_basename).$(inputs.tool_name).stdout
 
 inputs:
-  resources: {type: 'File[]', doc: "Reference tar balls needed for WGSA. Min needed precomputed_hg38.tgz, wgsa_hg38_resource.tgz "}
+  resources: {type: 'File[]', doc: "Reference tar balls needed for WGSA. Min needed wgsa_hg38_resource.tgz, crossover.tgz"}
   annovar_ref: {type: File, doc: "Basic annovar wgsa refs tar ball"}
-  snpeff_ref: {type: File, doc: "data tar ball for snpEff contaning HG38 nad GRCh38 refs"}
+  snpeff_ref: {type: File, doc: "data tar ball for snpEff containing HG38 nad GRCh38 refs"}
   vep_ref: {type: File, doc: "standard vep cache file"}
   vep_fasta: {type: File, secondaryFiles: ['.fai', '.gzi'], doc: "top level fasta file vep copies when installing"}
   input_vcf:
@@ -82,22 +82,27 @@ outputs:
     type: File
     outputBinding:
       glob: '*.wgsa_annotated.txt.*.gz'
+    doc: "Merge annotated table"
   output_desc:
     type: 'File[]'
     outputBinding:
       glob: '*.description.txt'
+    doc: "Description of databases run"
   job_stdout:
     type: File
     outputBinding:
       glob: '*.stdout'
+    doc: "Stdout output for debugging"
   runtime_settings:
     type: File
     outputBinding:
       glob: '*.settings.txt'
+    doc: "Run time settings file for debugging"
   runtime_shell_script:
     type: File
     outputBinding:
       glob: '*.settings.txt.sh'
+    doc: "WGSA-generated shell script"
 
 $namespaces:
   sbg: https://sevenbridges.com
