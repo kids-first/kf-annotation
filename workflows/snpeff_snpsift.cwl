@@ -27,27 +27,15 @@ outputs:
   base_vcf:
     type: File
     outputSource: snpeff/output_vcf
-  base_tbi:
-    type: File
-    outputSource: snpeff/output_tbi
   dbnsfp_vcf:
     type: File
     outputSource: snpsift_dbnsfp/output_vcf
-  dbnsfp_tbi:  
-    type: File
-    outputSource: snpsift_dbnsfp/output_tbi
   gwas_vcf:
     type: File
     outputSource: snpsift_gwascat/output_vcf
-  gwas_tbi:
-    type: File
-    outputSource: snpsift_gwascat/output_tbi
   vcf_vcfs:
     type: File[]
     outputSource: snpsift_vcfdbs/output_vcf 
-  vcf_tbis:
-    type: File[]
-    outputSource: snpsift_vcfdbs/output_tbi
 
 steps:
   snpeff: 
@@ -58,7 +46,7 @@ steps:
       input_vcf: input_vcf
       output_basename: output_basename
       tool_name: tool_name
-    out: [output_vcf, output_tbi]
+    out: [output_vcf]
 
   snpsift_dbnsfp:
     run: ../tools/snpsift_annotate.cwl
@@ -68,9 +56,8 @@ steps:
       db_name: {default: "dbnsfp"}
       fields: dbnsfp_fields
       input_vcf: snpeff/output_vcf
-      input_tbi: snpeff/output_tbi
       output_basename: output_basename
-    out: [output_vcf, output_tbi]      
+    out: [output_vcf]
 
   snpsift_gwascat:
     run: ../tools/snpsift_annotate.cwl
@@ -79,9 +66,8 @@ steps:
       db_file: gwas_cat_db_file
       db_name: {default: "gwas_catalog"}
       input_vcf: snpeff/output_vcf
-      input_tbi: snpeff/output_tbi
       output_basename: output_basename
-    out: [output_vcf, output_tbi]
+    out: [output_vcf]
 
   snpsift_vcfdbs:
     run: ../tools/snpsift_annotate.cwl
@@ -93,6 +79,5 @@ steps:
       db_name: vcf_db_names 
       fields: vcf_fields 
       input_vcf: snpeff/output_vcf
-      input_tbi: snpeff/output_tbi
       output_basename: output_basename
-    out: [output_vcf, output_tbi]
+    out: [output_vcf]

@@ -58,5 +58,4 @@ inputs:
   tool_name: { type: string, doc: Tool name to be used in output filenames } 
 
 outputs:
-  output_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' } }
-  output_tbi: { type: File, outputBinding: { glob: '*.vcf.gz.tbi' } }
+  output_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' }, secondaryFiles: [.tbi] }
