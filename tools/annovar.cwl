@@ -87,12 +87,12 @@ arguments:
       bgzip $(inputs.output_basename).hg38_multianno.txt
 
 inputs:
-  cache: { type: File, doc: TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations }
-  additional_dbs: { type: File[]?, doc: List of TAR GZ files containing the custom Annovar databases files for dbnsfp35c, clinvar_20190305, dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, exac03, and gnomad30_genome } 
-  protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: Gene-based annotation to be used in this run of the tool }
-  input_vcf: { type: File, secondaryFiles: [.tbi], doc: VCF file (with associated index) to be annotated }
-  run_dbs: { type: boolean, doc: Should the additional dbs be processed in this run of the tool? true/false }
-  output_basename: { type: string, doc: String that will be used in the output filenames }
+  cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  additional_dbs: { type: 'File[]?', doc: "List of TAR GZ files containing the custom Annovar databases files for dbnsfp35c, clinvar_20190305, dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, exac03, and gnomad30_genome" } 
+  protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: "Gene-based annotation to be used in this run of the tool" }
+  input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
+  run_dbs: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool? true/false" }
+  output_basename: { type: string, doc: "String that will be used in the output filenames" }
 
 outputs:
   anno_txt: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.txt.gz } }

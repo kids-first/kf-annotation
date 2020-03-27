@@ -56,12 +56,12 @@ arguments:
       && tabix $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
 
 inputs:
-  mode: { type: { type: enum, symbols: [annotate, dbnsfp, gwasCat] }, doc: Mode of SnpSift to run. }
-  db_file: { type: File, secondaryFiles: [.tbi], doc: Reference database for annotating the input. }
-  db_name: { type: string, doc: Name of the database being used. }
-  fields: { type: string?, doc: Comma-separated list of fields from the database that will be used as annotations. }
-  input_vcf: { type: File, secondaryFiles: [.tbi], doc: VCF file (witt TBI) to be annotated. }
-  output_basename: { type: string, doc: String that will be used in the output filenames. } 
+  mode: { type: { type: enum, symbols: [annotate, dbnsfp, gwasCat] }, doc: "Mode of SnpSift to run" }
+  db_file: { type: File, secondaryFiles: [.tbi], doc: "Reference database for annotating the input" }
+  db_name: { type: string, doc: "Name of the database being used" }
+  fields: { type: string?, doc: "Comma-separated list of fields from the database that will be used as annotations" }
+  input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (witt TBI) to be annotated" }
+  output_basename: { type: string, doc: "String that will be used in the output filenames" } 
 
 outputs:
   output_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' }, secondaryFiles: [.tbi] }
