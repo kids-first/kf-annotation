@@ -18,7 +18,7 @@ doc: |
     5. vcf: Writes output in VCF format
     6. offline: No database connections will be made, and a cache file or GFF/GTF file is required for annotation
     7. fork: Number of threads to run on
-    8. ccds: Adds the CCDS transcript identifer
+    8. ccds: Adds the CCDS transcript identifier
     9. uniprot: Adds best match accessions for translated protein products from three UniProt-related databases (SWISSPROT, TREMBL and UniParc)
     10. symbol: Adds the gene symbol (e.g. HGNC)
     11. numbers: Adds affected exon and intron numbering to to output. Format is Number/Total
