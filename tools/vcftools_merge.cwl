@@ -23,7 +23,7 @@ arguments:
   - position: 2
     shellQuote: false
     valueFrom: >-
-      | bgzip -c > $(inputs.output_basename).$(inputs.tool_name).merged_anno.vcf.gz
+      | bgzip -t 4 -c > $(inputs.output_basename).$(inputs.tool_name).merged_anno.vcf.gz
 
       tabix $(inputs.output_basename).$(inputs.tool_name).merged_anno.vcf.gz
 
@@ -43,5 +43,5 @@ outputs:
   merged_vcf:
     type: File
     outputBinding:
-      glob: '.merged_anno.vcf.gz'
+      glob: '*.merged_anno.vcf.gz'
     secondaryFiles: ['.tbi']
