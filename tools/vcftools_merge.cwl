@@ -23,7 +23,7 @@ arguments:
   - position: 2
     shellQuote: false
     valueFrom: >-
-      | bgzip -t 4 -c > $(inputs.output_basename).$(inputs.tool_name).merged_anno.vcf.gz
+      | bgzip -@ 4 -c > $(inputs.output_basename).$(inputs.tool_name).merged_anno.vcf.gz
 
       tabix $(inputs.output_basename).$(inputs.tool_name).merged_anno.vcf.gz
 
