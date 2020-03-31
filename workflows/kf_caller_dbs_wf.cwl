@@ -11,9 +11,9 @@ inputs:
   tool_name: string
   strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
   gwas_cat_db_file: {type: File, secondaryFiles: [.tbi], doc: "GWAS catalog file"}
-  SnpSift_vcf_db_file: File
+  clinvar_vcf: {type: File, secondaryFiles: [.tbi], doc: "ClinVar VCF reference"}
   SnpSift_vcf_db_name: {type: string, doc: "List of database names corresponding with each vcf_db_files"}
-  SnpSift_vcf_fields: {type: string, doc: "csv string of dbs to run"}
+  SnpSift_vcf_fields: {type: string, doc: "csv string of fields to pull"}
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   ANNOVAR_additional_dbs: { type: 'File[]?', doc: "List of TAR GZ files containing the custom Annovar databases files for dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, and gnomad30_genome" } 
   # protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: "Gene-based annotation to be used in this run of the tool" }
@@ -29,7 +29,7 @@ inputs:
 outputs:
   snpEff_Sift_results:
     type: File[]
-    outputSource: [snpeff_hg38/output_vcf, snpeff_ens/output_vcf, snpsift_gwascat/output_vcf, snpsift_vcfdbs/output_vcf]
+    outputSource: [snpeff_hg38/output_vcf, snpeff_ens/output_vcf, snpsift_gwascat/output_vcf, snpsift_clinvar/output_vcf]
   ANNOVAR_results: 
     type: File[]
     outputSource: [annovar_refgene/anno_vcf, annovar_refgene/anno_tbi, annovar_refgene/anno_txt, annovar_ensgene/anno_vcf, annovar_ensgene/anno_tbi, annovar_ensgene/anno_txt, annovar_knowngene/anno_vcf, annovar_knowngene/anno_tbi, annovar_knowngene/anno_txt]
@@ -52,8 +52,7 @@ steps:
     run: ../tools/snpeff_annotate.cwl
     in:
       ref_tar_gz: snpEff_ref_tar_gz
-      reference_name:
-        valueFrom: ${return "hg38"}
+      reference_name: {default: "hg38"}
       input_vcf: bcftools_strip_info/stripped_vcf
       output_basename: output_basename
       tool_name: tool_name
@@ -63,8 +62,7 @@ steps:
     run: ../tools/snpeff_annotate.cwl
     in:
       ref_tar_gz: snpEff_ref_tar_gz
-      reference_name:
-        valueFrom: ${return "GRCh38.86"}
+      reference_name: {default: "GRCh38.86"}
       input_vcf: input_vcf
       output_basename: output_basename
       tool_name: tool_name
@@ -80,13 +78,13 @@ steps:
       output_basename: output_basename
     out: [output_vcf]
 
-  snpsift_vcfdbs:
+  snpsift_clinvar:
     run: ../tools/snpsift_annotate.cwl
     #scatter: [db_file,db_name,fields]
     # scatterMethod: dotproduct
     in:
       mode: {default: "annotate"}
-      db_file: SnpSift_vcf_db_file
+      db_file: clinvar_vcf
       db_name: SnpSift_vcf_db_name 
       fields: SnpSift_vcf_fields 
       input_vcf: bcftools_strip_info/stripped_vcf
@@ -97,33 +95,27 @@ steps:
     in:
       cache: ANNOVAR_cache
       additional_dbs: ANNOVAR_additional_dbs
-      protocol_name:
-        valueFrom: ${return "refGene"}
+      protocol_name: {default: "refGene"}
       input_vcf: bcftools_strip_info/stripped_vcf
-      run_dbs:
-        valueFrom: ${return true}
+      run_dbs: {default: True}
       output_basename: output_basename
     out: [anno_txt, anno_vcf, anno_tbi]
   annovar_ensgene:
     run: ../tools/annovar.cwl
     in:
       cache: ANNOVAR_cache
-      protocol_name:
-        valueFrom: ${return "ensGene"}
+      protocol_name: {default: "ensGene"}
       input_vcf: bcftools_strip_info/stripped_vcf
-      run_dbs:
-        valueFrom: ${return false}
+      run_dbs: {default: False}
       output_basename: output_basename
     out: [anno_txt, anno_vcf, anno_tbi]
   annovar_knowngene:
     run: ../tools/annovar.cwl
     in:
       cache: ANNOVAR_cache
-      protocol_name:
-        valueFrom: ${return "knownGene"}
+      protocol_name: {default: "knownGene"}
       input_vcf: bcftools_strip_info/stripped_vcf
-      run_dbs:
-        valueFrom: ${return false}
+      run_dbs: {default: False}
       output_basename: output_basename
     out: [anno_txt, anno_vcf, anno_tbi]
   vep_annotate:
@@ -141,3 +133,10 @@ steps:
       tool_name: tool_name
     out: [output_vcf, output_tbi, output_html, warn_txt]
 
+$namespaces:
+  sbg: https://sevenbridges.com
+hints:
+  - class: 'sbg:maxNumberOfParallelInstances'
+    value: 2
+  - class: 'sbg:AWSInstanceType'
+    value: c5.9xlarge
