@@ -44,7 +44,7 @@ arguments:
 
       java -jar /snpEff/SnpSift.jar $(inputs.mode)
       -v
-      ${ if (inputs.mode == 'gwasCat') {return ''} else {return '-a'}}
+      ${ if (inputs.mode == 'gwasCat') {return ''} else {return '-a -tabix'}}
       ${ if (inputs.fields && inputs.mode == 'annotate') {
         return '-info ' + inputs.fields
       } else if (inputs.fields && inputs.mode == 'dbnsfp') {
@@ -53,7 +53,6 @@ arguments:
         return ''
       }}
       -db $(inputs.db_file.path)
-      -tabix
       $(inputs.input_vcf.path)
       | bgzip -c > $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
       && tabix $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
