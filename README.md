@@ -22,7 +22,7 @@ Our implementation focuses on the following databases and what was found to be t
 | ExAC                | exac03(20151129)          | annotate                  | NA                                 |
 | Gnomad              | gnomad30_genome(20191104) | annotate (r3.0)           | Cache (r2.1, exomes only remapped) |
 | GWAS Catalog        | NA                        | gwasCat (e98_r2020-03-08) | Cache (24/09/2019)                 |
-| PhyloP              | in dbnsfp35c(20180921)    | NA                        | Custom (5/7/15)                    |
+| PhyloP              | in dbnsfp35c(20180921)    | NA                        | in dbNSFP Plugin                   |
 | UK10K               | NA                        | annotate (20160215)       | in dbNSFP Plugin                   |
 | 1000Genomes         | 1000g2015aug(20150824)    | annotate (v8.20130502)    | Cache (Phase 3 remapped)           |
 
