@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kf_all_caller_wf.cwl
+id: kf_caller_only_wf.cwl
 requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement

@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kf_all_caller_wf.cwl
+id: kf_caller_db_wf.cwl
 requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement
@@ -25,7 +25,6 @@ inputs:
   VEP_cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   VEP_cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
   VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
-  VEP_phylop: { type: 'File?', doc: "BigWig file containing PhyloP annotation information" }
 
 outputs:
   snpEff_Sift_results:
@@ -138,7 +137,6 @@ steps:
       cadd_indels: VEP_cadd_indels
       cadd_snvs: VEP_cadd_snvs
       dbnsfp: VEP_dbnsfp
-      phylop: VEP_phylop
       output_basename: output_basename
       tool_name: tool_name
     out: [output_vcf, output_tbi, output_html, warn_txt]
