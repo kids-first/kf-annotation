@@ -14,6 +14,7 @@ doc: |
     3. info: Comma separated list of INFO fields from the reference database the tool will use to annotate matching listings
     4. f: Same as "info" but specficially used when the tool is used running in dbnsfp mode
     5. db: The reference database file used for annotating the input
+    6. tabix: VCF database is tabix-indexed
 
   An example run of this tool will use a command like this:
     /bin/bash -c
@@ -24,6 +25,7 @@ doc: |
       -a 
       -info fields-string-value 
       -db /path/to/db_file.ext 
+      -tabix
       /path/to/input_vcf.ext | 
     bgzip -c > output_basename-string-value.SnpSift.db_name-string-value.snpEff.vcf.gz && 
     tabix output_basename-string-value.SnpSift.db_name-string-value.snpEff.vcf.gz
@@ -51,6 +53,7 @@ arguments:
         return ''
       }}
       -db $(inputs.db_file.path)
+      -tabix
       $(inputs.input_vcf.path)
       | bgzip -c > $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
       && tabix $(inputs.output_basename).SnpSift.$(inputs.db_name).snpEff.vcf.gz
