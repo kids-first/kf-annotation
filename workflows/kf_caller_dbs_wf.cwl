@@ -10,14 +10,14 @@ inputs:
   output_basename: string
   tool_name: string
   strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
-  gwas_cat_db_file: File
-  SnpSift_vcf_db_files: File[]
-  SnpSift_vcf_db_names: {type: 'string[]', doc: "List of database names corresponding with each vcf_db_files"}
-  SnpSift_vcf_fields: {type: 'string[]', doc: "List of fields for each listed vcf_db_names"}
+  gwas_cat_db_file: {type: File, secondaryFiles: [.tbi], doc: "GWAS catalog file"}
+  SnpSift_vcf_db_file: File
+  SnpSift_vcf_db_name: {type: string, doc: "List of database names corresponding with each vcf_db_files"}
+  SnpSift_vcf_fields: {type: string, doc: "csv string of dbs to run"}
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   ANNOVAR_additional_dbs: { type: 'File[]?', doc: "List of TAR GZ files containing the custom Annovar databases files for dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, and gnomad30_genome" } 
   # protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: "Gene-based annotation to be used in this run of the tool" }
-  ANNOVAR_run_dbs: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool? true/false" }
+  # ANNOVAR_run_dbs: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool? true/false" }
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
@@ -83,12 +83,12 @@ steps:
 
   snpsift_vcfdbs:
     run: ../tools/snpsift_annotate.cwl
-    scatter: [db_file,db_name,fields]
-    scatterMethod: dotproduct
+    #scatter: [db_file,db_name,fields]
+    # scatterMethod: dotproduct
     in:
       mode: {default: "annotate"}
-      db_file: SnpSift_vcf_db_files
-      db_name: SnpSift_vcf_db_names 
+      db_file: SnpSift_vcf_db_file
+      db_name: SnpSift_vcf_db_name 
       fields: SnpSift_vcf_fields 
       input_vcf: bcftools_strip_info/stripped_vcf
       output_basename: output_basename
