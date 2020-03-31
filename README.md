@@ -10,21 +10,21 @@ Variant caller annotation repository. Outputs from variant germline and somatic 
 ### Database Setup
 Our implementation focuses on the following databases and what was found to be their ability to be used in the three tools:
 
-| Annotation Database | Annovar          | SnpEff/SnpSift | VEP    |
-|---------------------|------------------|----------------|--------|
-| CADD                | NA               | NA             | Plugin |
-| Clinvar             | clinvar_20190305 | annotate       | Cache  |
-| COSMIC              | cosmic90_coding  | annotate       | Cache  |
-| dbNSFP              | dbnsfp35c        | dbnsfp         | Plugin |
-| dbscSNV             | dbscsnv11        | NA             | Plugin |
-| dbSNP               | NA               | annotate       | Cache  |
-| ESP65000            | esp6500siv2_all  | annotate       | Cache  |
-| ExAC                | exac03           | annotate       | NA     |
-| Gnomad              | gnomad30_genome  | annotate       | Cache  |
-| GWAS Catalog        | NA               | gwasCat        | Cache? |
-| PhyloP              | dbnsfp35c        | NA             | Custom |
-| UK10K               | NA               | annotate       | Plugin |
-| 1000Genomes         | 1000g2015aug     | annotate       | Cache  |
+| Annotation Database | Annovar                   | SnpEff/SnpSift            | VEP                                |
+|---------------------|---------------------------|---------------------------|------------------------------------|
+| CADD                | in dbnsfp35c(20180921)    | NA                        | Plugin (v1.5)                      |
+| Clinvar             | clinvar_20190305          | annotate (20200317)       | Cache (2019-09)                    |
+| COSMIC              | cosmic90_coding(v90)      | annotate (v90)            | Cache (v90)                        |
+| dbNSFP              | dbnsfp35c(20180921)       | dbnsfp (4.0a)             | Plugin (4.0a)                      |
+| dbscSNV             | dbscsnv11(20151218)       | NA                        | Plugin (1.1)                       |
+| dbSNP               | avsnp150(20170929)        | annotate (153)            | Cache (153)                        |
+| ESP65000            | esp6500siv2_all(20141222) | annotate (V2-SSA137)      | Cache (V2-SSA137 remapped)         |
+| ExAC                | exac03(20151129)          | annotate                  | NA                                 |
+| Gnomad              | gnomad30_genome(20191104) | annotate (r3.0)           | Cache (r2.1, exomes only remapped) |
+| GWAS Catalog        | NA                        | gwasCat (e98_r2020-03-08) | Cache (24/09/2019)                 |
+| PhyloP              | in dbnsfp35c(20180921)    | NA                        | Custom (5/7/15)                    |
+| UK10K               | NA                        | annotate (20160215)       | in dbNSFP Plugin                   |
+| 1000Genomes         | 1000g2015aug(20150824)    | annotate (v8.20130502)    | Cache (Phase 3 remapped)           |
 
 Ultimately we selected the following tools to use for each annotation:
 
