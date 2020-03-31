@@ -122,7 +122,8 @@ arguments:
       --protein
       --assembly GRCh38
       ${if(inputs.cache) {return "--dir_cache $PWD --cache --merged"} else {return ""}}
-      ${if(inputs.run_cache_dbs) {return "--check_existing --af_1kg --af_esp --af_gnomad"} else { return ""}}
+      ${if(inputs.run_cache_existing) {return "--check_existing"} else { return ""}}
+      ${if(inputs.run_cache_af) {return "--af_1kg --af_esp --af_gnomad"} else { return ""}}
       ${if(inputs.reference) { return "--hgvs --fasta "+inputs.reference.path} else {return ""}}
       ${if(inputs.cadd_indels && inputs.cadd_snvs) {return "--plugin CADD,"+inputs.cadd_snvs.path+","+inputs.cadd_indels.path} else {return ""}}
       ${if(inputs.dbnsfp) {return "--plugin dbNSFP,"+inputs.dbnsfp.path+",ALL"} else {return ""}}
@@ -135,7 +136,8 @@ inputs:
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
-  run_cache_dbs: { type: boolean, doc: "Run the additional dbs in cache" }
+  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
   dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
