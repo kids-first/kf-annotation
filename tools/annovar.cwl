@@ -33,9 +33,9 @@ doc: |
       humandb
       -out output_basename-string-value
       -buildver hg38
-      -protocol ensGene,dbnsfp35c,clinvar_20190305,dbscsnv11,cosmic90_coding,1000g2015aug_all,esp6500siv2_all,exac03,gnomad30_genome
-      -operation g,f,f,f,f,f,f,f,f
-      -argument '--hgvs --splicing_threshold 10',,,,,,,,
+      -protocol ensGene,dbscsnv11,cosmic90_coding,1000g2015aug_all,esp6500siv2_all,gnomad30_genome
+      -operation g,f,f,f,f,f
+      -argument '--hgvs --splicing_threshold 10',,,,,
       -vcfinput
       -thread 16
       -remove
@@ -75,9 +75,9 @@ arguments:
       humandb
       -out $(inputs.output_basename)
       -buildver hg38
-      -protocol $(inputs.protocol_name)${if (inputs.run_dbs) { return ",dbnsfp35c,clinvar_20190305,dbscsnv11,cosmic90_coding,1000g2015aug_all,esp6500siv2_all,exac03,gnomad30_genome" } else { return "" }}
-      -operation g${if (inputs.run_dbs) { return ",f,f,f,f,f,f,f,f" } else { return "" }}
-      -argument '--hgvs --splicing_threshold 10'${if (inputs.run_dbs) { return ",,,,,,,," } else { return ""}}
+      -protocol $(inputs.protocol_name)${if (inputs.run_dbs) { return ",dbscsnv11,cosmic90_coding,1000g2015aug_all,esp6500siv2_all,gnomad30_genome" } else { return "" }}
+      -operation g${if (inputs.run_dbs) { return ",f,f,f,f,f" } else { return "" }}
+      -argument '--hgvs --splicing_threshold 10'${if (inputs.run_dbs) { return ",,,,," } else { return ""}}
       -vcfinput
       -thread 16
       -remove
@@ -88,7 +88,7 @@ arguments:
 
 inputs:
   cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
-  additional_dbs: { type: 'File[]?', doc: "List of TAR GZ files containing the custom Annovar databases files for dbnsfp35c, clinvar_20190305, dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, exac03, and gnomad30_genome" } 
+  additional_dbs: { type: 'File[]?', doc: "List of TAR GZ files containing the custom Annovar databases files for dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, and gnomad30_genome" } 
   protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: "Gene-based annotation to be used in this run of the tool" }
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
   run_dbs: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool? true/false" }
