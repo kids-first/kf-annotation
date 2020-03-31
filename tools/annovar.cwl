@@ -60,11 +60,11 @@ arguments:
 
       tar xvf $(inputs.cache.path) &&
       ${
-        var cmd = "";
-        for (var i=0; i < inputs.additional_dbs.length; i++){
-          cmd += "tar xvf " + inputs.additional_dbs[i].path + " -C humandb && ";
-        }
-        if (inputs.run_dbs) {
+        if (inputs.additional_dbs && inputs.run_dbs) {
+          var cmd = "";
+          for (var i=0; i < inputs.additional_dbs.length; i++){
+            cmd += "tar xvf " + inputs.additional_dbs[i].path + " -C humandb && ";
+          }
           return cmd;
         } else {
           return "";
