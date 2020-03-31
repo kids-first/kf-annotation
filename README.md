@@ -23,8 +23,26 @@ Our implementation focuses on the following databases and what was found to be t
 | Gnomad              | gnomad30_genome  | annotate       | Cache  |
 | GWAS Catalog        | NA               | gwasCat        | Cache? |
 | PhyloP              | dbnsfp35c        | NA             | Custom |
-| UK10K               | NA               | annotate       | NA     |
+| UK10K               | NA               | annotate       | Plugin |
 | 1000Genomes         | 1000g2015aug     | annotate       | Cache  |
+
+Ultimately we selected the following tools to use for each annotation:
+
+| Annotation Database | Chosen Tool    |
+|---------------------|----------------|
+| CADD                | VEP            |
+| Clinvar             | SnpEff/SnpSift |
+| COSMIC              | Annovar        |
+| dbNSFP              | VEP            |
+| dbscSNV             | Annovar        |
+| dbSNP               | VEP            |
+| ESP65000            | Annovar        |
+| ExAC                | Not Run        |
+| Gnomad              | Annovar        |
+| GWAS Catalog        | SnpEff/SnpSift |
+| PhyloP              | VEP            |
+| UK10K               | VEP            |
+| 1000Genomes         | Annovar        |
 
 #### Downloading Annovar Databases
 All of the databases detailed above are available to download directly from Annovar. In general, users can use `-downdb -webfrom annovar` in Annovar directly to download these databases.
@@ -60,13 +78,10 @@ The Annovar tool will run without DBs if provided with a `false` value for `run_
 #### With DBs
 The Annovar tool will run the additional databases if provided with a `true` value for `run_dbs`.
 The databases that will be run are the following:
-- `dbnsfp35c`
-- `clinvar_20190305`
 - `dbscsnv11`
 - `cosmic90_coding`
 - `1000g2015aug_all`
 - `esp6500siv2_all`
-- `exac03`
 - `gnomad30_genome`
 
 Each of these databases must be provided in the `additional_dbs` file list input.
@@ -93,7 +108,7 @@ Moreover, you need to provide the additional databases as three sets of inputs:
 
 ### Running [Variant Effect Predictor](https://github.com/kids-first/kf-annotation/blob/master/tools/variant_effect_predictor99.cwl)
 #### Without DBs
-To run VEP without additional DBs, simply set `run_cache_dbs` to `false` and do not provide the following inputs:
+To run VEP without additional DBs, simply set `run_cache_existing` to `false`, `run_cache_af` to `false`, and do not provide the following inputs:
 - `cadd_indels`
 - `cadd_snvs`
 - `dbnsfp`
