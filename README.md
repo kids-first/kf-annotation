@@ -10,21 +10,39 @@ Variant caller annotation repository. Outputs from variant germline and somatic 
 ### Database Setup
 Our implementation focuses on the following databases and what was found to be their ability to be used in the three tools:
 
-| Annotation Database | Annovar          | SnpEff/SnpSift | VEP    |
-|---------------------|------------------|----------------|--------|
-| CADD                | NA               | NA             | Plugin |
-| Clinvar             | clinvar_20190305 | annotate       | Cache  |
-| COSMIC              | cosmic90_coding  | annotate       | Cache  |
-| dbNSFP              | dbnsfp35c        | dbnsfp         | Plugin |
-| dbscSNV             | dbscsnv11        | NA             | Plugin |
-| dbSNP               | NA               | annotate       | Cache  |
-| ESP65000            | esp6500siv2_all  | annotate       | Cache  |
-| ExAC                | exac03           | annotate       | NA     |
-| Gnomad              | gnomad30_genome  | annotate       | Cache  |
-| GWAS Catalog        | NA               | gwasCat        | Cache? |
-| PhyloP              | dbnsfp35c        | NA             | Custom |
-| UK10K               | NA               | annotate       | NA     |
-| 1000Genomes         | 1000g2015aug     | annotate       | Cache  |
+| Annotation Database | Annovar                   | SnpEff/SnpSift            | VEP                                |
+|---------------------|---------------------------|---------------------------|------------------------------------|
+| CADD                | in dbnsfp35c(20180921)    | NA                        | Plugin (v1.5)                      |
+| Clinvar             | clinvar_20190305          | annotate (20200317)       | Cache (2019-09)                    |
+| COSMIC              | cosmic90_coding(v90)      | annotate (v90)            | Cache (v90)                        |
+| dbNSFP              | dbnsfp35c(20180921)       | dbnsfp (4.0a)             | Plugin (4.0a)                      |
+| dbscSNV             | dbscsnv11(20151218)       | NA                        | Plugin (1.1)                       |
+| dbSNP               | avsnp150(20170929)        | annotate (153)            | Cache (153)                        |
+| ESP65000            | esp6500siv2_all(20141222) | annotate (V2-SSA137)      | Cache (V2-SSA137 remapped)         |
+| ExAC                | exac03(20151129)          | annotate                  | NA                                 |
+| Gnomad              | gnomad30_genome(20191104) | annotate (r3.0)           | Cache (r2.1, exomes only remapped) |
+| GWAS Catalog        | NA                        | gwasCat (e98_r2020-03-08) | Cache (24/09/2019)                 |
+| PhyloP              | in dbnsfp35c(20180921)    | NA                        | in dbNSFP Plugin                   |
+| UK10K               | NA                        | annotate (20160215)       | in dbNSFP Plugin                   |
+| 1000Genomes         | 1000g2015aug(20150824)    | annotate (v8.20130502)    | Cache (Phase 3 remapped)           |
+
+Ultimately we selected the following tools to use for each annotation:
+
+| Annotation Database | Chosen Tool    |
+|---------------------|----------------|
+| CADD                | VEP            |
+| Clinvar             | SnpEff/SnpSift |
+| COSMIC              | Annovar        |
+| dbNSFP              | VEP            |
+| dbscSNV             | Annovar        |
+| dbSNP               | VEP            |
+| ESP65000            | Annovar        |
+| ExAC                | Not Run        |
+| Gnomad              | Annovar        |
+| GWAS Catalog        | SnpEff/SnpSift |
+| PhyloP              | VEP            |
+| UK10K               | VEP            |
+| 1000Genomes         | Annovar        |
 
 #### Downloading Annovar Databases
 All of the databases detailed above are available to download directly from Annovar. In general, users can use `-downdb -webfrom annovar` in Annovar directly to download these databases.
@@ -60,13 +78,10 @@ The Annovar tool will run without DBs if provided with a `false` value for `run_
 #### With DBs
 The Annovar tool will run the additional databases if provided with a `true` value for `run_dbs`.
 The databases that will be run are the following:
-- `dbnsfp35c`
-- `clinvar_20190305`
 - `dbscsnv11`
 - `cosmic90_coding`
 - `1000g2015aug_all`
 - `esp6500siv2_all`
-- `exac03`
 - `gnomad30_genome`
 
 Each of these databases must be provided in the `additional_dbs` file list input.
@@ -93,7 +108,7 @@ Moreover, you need to provide the additional databases as three sets of inputs:
 
 ### Running [Variant Effect Predictor](https://github.com/kids-first/kf-annotation/blob/master/tools/variant_effect_predictor99.cwl)
 #### Without DBs
-To run VEP without additional DBs, simply set `run_cache_dbs` to `false` and do not provide the following inputs:
+To run VEP without additional DBs, simply set `run_cache_existing` to `false`, `run_cache_af` to `false`, and do not provide the following inputs:
 - `cadd_indels`
 - `cadd_snvs`
 - `dbnsfp`
