@@ -18,10 +18,16 @@ arguments:
     valueFrom: >-
       set -eo pipefail
 
-      bcftools annotate -x $(inputs.strip_info) $(inputs.input_vcf.path) -O z 
-      -o $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
-
-      tabix $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
+      if [ -z $(inputs.strip_info) ]
+      then
+        echo "No strip value given, returning input";
+        ln -s $(inputs.input_vcf.path) .;
+        ln -s $(inputs.input_vcf.secondaryFiles[0].path) .;
+      else
+        bcftools annotate -x $(inputs.strip_info) $(inputs.input_vcf.path) -O z 
+        -o $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz;
+        tabix $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
+      fi
 
 inputs:
     input_vcf: {type: File, secondaryFiles: ['.tbi']}
