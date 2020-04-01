@@ -53,8 +53,8 @@ arguments:
       -v
       $(inputs.reference_name)
       $(inputs.input_vcf.path)
-      | bgzip -c > $(inputs.output_basename).$(inputs.tool_name).vcf.gz
-      && tabix $(inputs.output_basename).$(inputs.tool_name).vcf.gz
+      | bgzip -c > $(inputs.output_basename).$(inputs.reference_name).$(inputs.tool_name).vcf.gz
+      && tabix $(inputs.output_basename).$(inputs.reference_name).$(inputs.tool_name).vcf.gz
 
 inputs:
   ref_tar_gz: { type: File, doc: "TAR gzipped snpEff reference" }
