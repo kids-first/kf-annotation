@@ -85,7 +85,7 @@ arguments:
       perl /home/TOOLS/tools/annovar/current/bin/table_annovar.pl
       $(inputs.input_vcf.path)
       humandb
-      -out $(inputs.output_basename)
+      -out $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name)
       -buildver hg38
       ${
         var prot = "-protocol " + inputs.protocol_name
@@ -127,9 +127,9 @@ arguments:
       -thread 16
       -remove
       -nastring . &&
-      bgzip $(inputs.output_basename).hg38_multianno.vcf &&
-      tabix -p vcf $(inputs.output_basename).hg38_multianno.vcf.gz &&
-      bgzip $(inputs.output_basename).hg38_multianno.txt
+      bgzip $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.vcf &&
+      tabix -p vcf $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.vcf.gz &&
+      bgzip $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt
 
 inputs:
   cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
@@ -142,8 +142,9 @@ inputs:
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
   run_dbs: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool? true/false" }
   output_basename: { type: string, doc: "String that will be used in the output filenames" }
+  tool_name: { type: string, doc: "String of tool name that will be used in the output filenames" }
 
 outputs:
-  anno_txt: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.txt.gz } }
-  anno_vcf: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.vcf.gz } }
-  anno_tbi: { type: File, outputBinding: { glob: $(inputs.output_basename).hg38_multianno.vcf.gz.tbi } }
+  anno_txt: { type: File, outputBinding: { glob: '*.txt.gz' } }
+  anno_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' } }
+  anno_tbi: { type: File, outputBinding: { glob: '*.vcf.gz.tbi' } }
