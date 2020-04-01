@@ -134,9 +134,9 @@ arguments:
 inputs:
   cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
-  cosmic_db: { type: 'File?' doc: "COSMIC database tgz downloaded from COSMIC" }
+  cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
   kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }
-  esp_db: { type: 'File?' doc: "ESP database tgz downloaded from Annovar" }
+  esp_db: { type: 'File?', doc: "ESP database tgz downloaded from Annovar" }
   gnomad_db: { type: 'File?', doc: "gnomAD tgz downloaded from Annovar" }
   protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: "Gene-based annotation to be used in this run of the tool" }
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }

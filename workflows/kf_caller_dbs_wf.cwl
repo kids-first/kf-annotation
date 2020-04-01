@@ -5,19 +5,24 @@ requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement
 inputs:
-  snpEff_ref_tar_gz: File
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
   tool_name: string
   strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
+  snpEff_ref_tar_gz: File
   gwas_cat_db_file: {type: File, secondaryFiles: [.tbi], doc: "GWAS catalog file"}
   clinvar_vcf: {type: File, secondaryFiles: [.tbi], doc: "ClinVar VCF reference"}
   SnpSift_vcf_db_name: {type: string, doc: "List of database names corresponding with each vcf_db_files"}
   SnpSift_vcf_fields: {type: string, doc: "csv string of fields to pull"}
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
-  ANNOVAR_additional_dbs: { type: 'File[]?', doc: "List of TAR GZ files containing the custom Annovar databases files for dbscsnv11, cosmic90_coding, 1000g2015aug_all, esp6500siv2_all, and gnomad30_genome" } 
-  # protocol_name: { type: { type: enum, symbols: [ensGene, knownGene, refGene] }, doc: "Gene-based annotation to be used in this run of the tool" }
-  # ANNOVAR_run_dbs: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool? true/false" }
+  ANNOVAR_dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
+  ANNOVAR_cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
+  ANNOVAR_kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }
+  ANNOVAR_esp_db: { type: 'File?', doc: "ESP database tgz downloaded from Annovar" }
+  ANNOVAR_gnomad_db: { type: 'File?', doc: "gnomAD tgz downloaded from Annovar" }
+  ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
+  ANNOVAR_run_dbs_ensGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for ensGene protocol? true/false"}
+  ANNOVAR_run_dbs_knownGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for knownGene protocol? true/false"}
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
@@ -29,13 +34,17 @@ inputs:
 outputs:
   snpEff_Sift_results:
     type: File[]
-    outputSource: [snpeff_hg38/output_vcf, snpeff_ens/output_vcf, snpsift_gwascat/output_vcf, snpsift_clinvar/output_vcf]
+    outputSource: [run_snpEff_Sift_subwf/snpEff_hg38, run_snpEff_Sift_subwf/snpEff_ens, run_snpEff_Sift_subwf/SnpSift_GWAScat, run_snpEff_Sift_subwf/SnpSift_ClinVar]
   ANNOVAR_results: 
-    type: File[]
-    outputSource: [annovar_refgene/anno_vcf, annovar_refgene/anno_tbi, annovar_refgene/anno_txt, annovar_ensgene/anno_vcf, annovar_ensgene/anno_tbi, annovar_ensgene/anno_txt, annovar_knowngene/anno_vcf, annovar_knowngene/anno_tbi, annovar_knowngene/anno_txt]
+    type:
+        type: array
+        items:
+            type: array
+            items: File
+    outputSource: [run_annovar_subwf/ANNOVAR_refGene, run_annovar_subwf/ANNOVAR_ensGene, run_annovar_subwf/ANNOVAR_knownGene]
   VEP_results:
     type: File[]
-    outputSource:  [vep_annotate/output_vcf, vep_annotate/output_tbi]
+    outputSource: run_VEP_sub_wf/VEP
 
 steps:
   bcftools_strip_info:
@@ -46,92 +55,48 @@ steps:
       tool_name: tool_name
       strip_info: strip_info
     out: [stripped_vcf]
-
-      
-  snpeff_hg38: 
-    run: ../tools/snpeff_annotate.cwl
+  run_annovar_subwf:
+    run: ../sub_workflows/kf_annovar_explicit_sub_wf.cwl
     in:
-      ref_tar_gz: snpEff_ref_tar_gz
-      reference_name: {default: "hg38"}
+      input_vcf: bcftools_strip_info/stripped_vcf
+      output_basename: output_basename
+      ANNOVAR_cache: ANNOVAR_cache
+      ANNOVAR_dbscsnv_db: ANNOVAR_dbscsnv_db
+      ANNOVAR_cosmic_db: ANNOVAR_cosmic_db
+      ANNOVAR_kg_db: ANNOVAR_kg_db
+      ANNOVAR_esp_db: ANNOVAR_esp_db
+      ANNOVAR_gnomad_db: ANNOVAR_gnomad_db
+      ANNOVAR_run_dbs_refGene: ANNOVAR_run_dbs_refGene
+      ANNOVAR_run_dbs_ensGene: ANNOVAR_run_dbs_ensGene
+      ANNOVAR_run_dbs_knownGene: ANNOVAR_run_dbs_knownGene
+    out:
+      [ANNOVAR_refGene, ANNOVAR_ensGene, ANNOVAR_knownGene]
+  run_snpEff_Sift_subwf:
+    run: ../sub_workflows/kf_snpEff_Sift_sub_wf.cwl
+    in:
       input_vcf: bcftools_strip_info/stripped_vcf
       output_basename: output_basename
       tool_name: tool_name
-    out: [output_vcf]
-
-  snpeff_ens: 
-    run: ../tools/snpeff_annotate.cwl
+      snpEff_ref_tar_gz: snpEff_ref_tar_gz
+      gwas_cat_db_file: gwas_cat_db_file
+      clinvar_vcf: clinvar_vcf
+      SnpSift_vcf_db_name: SnpSift_vcf_db_name
+      SnpSift_vcf_fields: SnpSift_vcf_fields
+    out: [snpEff_hg38, snpEff_ens, SnpSift_GWAScat, SnpSift_ClinVar]
+  run_VEP_sub_wf:
+    run: ../sub_workflows/kf_VEP99_sub_wf.cwl
     in:
-      ref_tar_gz: snpEff_ref_tar_gz
-      reference_name: {default: "GRCh38.86"}
-      input_vcf: input_vcf
+      input_vcf: bcftools_strip_info/stripped_vcf
       output_basename: output_basename
       tool_name: tool_name
-    out: [output_vcf]
-
-  snpsift_gwascat:
-    run: ../tools/snpsift_annotate.cwl
-    in:
-      mode: {default: "gwasCat"}
-      db_file: gwas_cat_db_file
-      db_name: {default: "gwas_catalog"}
-      input_vcf: bcftools_strip_info/stripped_vcf
-      output_basename: output_basename
-    out: [output_vcf]
-
-  snpsift_clinvar:
-    run: ../tools/snpsift_annotate.cwl
-    #scatter: [db_file,db_name,fields]
-    # scatterMethod: dotproduct
-    in:
-      mode: {default: "annotate"}
-      db_file: clinvar_vcf
-      db_name: SnpSift_vcf_db_name 
-      fields: SnpSift_vcf_fields 
-      input_vcf: bcftools_strip_info/stripped_vcf
-      output_basename: output_basename
-    out: [output_vcf]
-  annovar_refgene:
-    run: ../tools/annovar.cwl
-    in:
-      cache: ANNOVAR_cache
-      additional_dbs: ANNOVAR_additional_dbs
-      protocol_name: {default: "refGene"}
-      input_vcf: bcftools_strip_info/stripped_vcf
-      run_dbs: {default: True}
-      output_basename: output_basename
-    out: [anno_txt, anno_vcf, anno_tbi]
-  annovar_ensgene:
-    run: ../tools/annovar.cwl
-    in:
-      cache: ANNOVAR_cache
-      protocol_name: {default: "ensGene"}
-      input_vcf: bcftools_strip_info/stripped_vcf
-      run_dbs: {default: False}
-      output_basename: output_basename
-    out: [anno_txt, anno_vcf, anno_tbi]
-  annovar_knowngene:
-    run: ../tools/annovar.cwl
-    in:
-      cache: ANNOVAR_cache
-      protocol_name: {default: "knownGene"}
-      input_vcf: bcftools_strip_info/stripped_vcf
-      run_dbs: {default: False}
-      output_basename: output_basename
-    out: [anno_txt, anno_vcf, anno_tbi]
-  vep_annotate:
-    run: ../tools/variant_effect_predictor99.cwl
-    in:
-      input_vcf: bcftools_strip_info/stripped_vcf
       reference: reference
-      cache: VEP_cache
-      run_cache_existing: VEP_run_cache_existing
-      run_cache_af: VEP_run_cache_af
-      cadd_indels: VEP_cadd_indels
-      cadd_snvs: VEP_cadd_snvs
-      dbnsfp: VEP_dbnsfp
-      output_basename: output_basename
-      tool_name: tool_name
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+      VEP_cache: VEP_cache
+      VEP_run_cache_existing: VEP_run_cache_existing
+      VEP_run_cache_af: VEP_run_cache_af
+      VEP_cadd_indels: VEP_cadd_indels
+      VEP_cadd_snvs: VEP_cadd_snvs
+      VEP_dbnsfp: VEP_dbnsfp
+    out: [VEP]
 
 $namespaces:
   sbg: https://sevenbridges.com
