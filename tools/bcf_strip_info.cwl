@@ -11,17 +11,25 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/vcfutils:latest'
 
-baseCommand: ["/bin/bash", "-c"]
+baseCommand: []
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      set -eo pipefail
-
-      bcftools annotate -x $(inputs.strip_info) $(inputs.input_vcf.path) -O z 
-      -o $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
-
-      tabix $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
+      ${
+        if (inputs.strip_info == null){
+          var cmd = "echo \"No strip value given, returning input\";";
+          cmd += "cp " + inputs.input_vcf.path + " .;";
+          cmd += "cp " + inputs.input_vcf.secondaryFiles[0].path + " .;";
+          return cmd;
+        }
+        else{
+          var cmd = "bcftools annotate -x " + inputs.strip_info + " " + inputs.input_vcf.path
+          + " -O z -o " + inputs.output_basename + "." + inputs.tool_name + ".INFO_stripped.vcf.gz;";
+          cmd += "tabix " + inputs.output_basename + "." + inputs.tool_name + ".INFO_stripped.vcf.gz;";
+          return cmd;
+        }
+      }
 
 inputs:
     input_vcf: {type: File, secondaryFiles: ['.tbi']}
@@ -33,5 +41,5 @@ outputs:
   stripped_vcf:
     type: File
     outputBinding:
-      glob: '*.INFO_stripped.vcf.gz'
+      glob: '*.vcf.gz'
     secondaryFiles: ['.tbi']
