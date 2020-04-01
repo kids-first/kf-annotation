@@ -19,8 +19,8 @@ inputs:
 
 outputs:
   VEP: 
-    type: File[]
-    outputSource: [vep_annotate/output_vcf, vep_annotate/output_tbi]
+    type: File
+    outputSource: vep_annotate/output_vcf
 steps:
   vep_annotate:
     run: ../tools/variant_effect_predictor99.cwl
@@ -35,4 +35,4 @@ steps:
       dbnsfp: VEP_dbnsfp
       output_basename: output_basename
       tool_name: tool_name
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_html, warn_txt]
