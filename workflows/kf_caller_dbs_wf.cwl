@@ -36,11 +36,8 @@ outputs:
     type: File[]
     outputSource: [run_snpEff_Sift_subwf/snpEff_hg38, run_snpEff_Sift_subwf/snpEff_ens, run_snpEff_Sift_subwf/SnpSift_GWAScat, run_snpEff_Sift_subwf/SnpSift_ClinVar]
   ANNOVAR_results: 
-    type:
-        type: array
-        items:
-            type: array
-            items: File
+    type: File[]
+    linkMerge: merge_flattened
     outputSource: [run_annovar_subwf/ANNOVAR_refGene, run_annovar_subwf/ANNOVAR_ensGene, run_annovar_subwf/ANNOVAR_knownGene]
   VEP_results:
     type: File

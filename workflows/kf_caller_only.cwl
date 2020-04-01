@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kf_caller_olny_wf
+id: kf_caller_only_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement
@@ -24,11 +24,8 @@ outputs:
     type: File[]
     outputSource: [run_snpEff_only_subwf/snpEff_hg38, run_snpEff_only_subwf/snpEff_ens]
   ANNOVAR_results: 
-    type:
-        type: array
-        items:
-            type: array
-            items: File
+    type: File[]
+    linkMerge: merge_flattened
     outputSource: [run_annovar_subwf/ANNOVAR_refGene, run_annovar_subwf/ANNOVAR_ensGene, run_annovar_subwf/ANNOVAR_knownGene]
   VEP_results:
     type: File
