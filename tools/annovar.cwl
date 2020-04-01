@@ -97,5 +97,4 @@ inputs:
 
 outputs:
   anno_txt: { type: File, outputBinding: { glob: '*.txt.gz' } }
-  anno_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' } }
-  anno_tbi: { type: File, outputBinding: { glob: '*.vcf.gz.tbi' } }
+  anno_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' }, secondaryFiles: ['.tbi'] }
