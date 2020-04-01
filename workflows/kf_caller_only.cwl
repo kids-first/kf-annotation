@@ -4,11 +4,13 @@ id: kf_caller_only_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement
+  - class: MultipleInputFeatureRequirement
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
   tool_name: string
   strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
+  include_expression: {type: string?, doc: "Select variants meeting criteria, for instance, for all but snps: TYPE!=\"snp\""}
   snpEff_ref_tar_gz: File
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
@@ -25,8 +27,8 @@ outputs:
     outputSource: [run_snpEff_only_subwf/snpEff_hg38, run_snpEff_only_subwf/snpEff_ens]
   ANNOVAR_results: 
     type: File[]
-    linkMerge: merge_flattened
     outputSource: [run_annovar_subwf/ANNOVAR_refGene, run_annovar_subwf/ANNOVAR_ensGene, run_annovar_subwf/ANNOVAR_knownGene]
+    linkMerge: merge_flattened
   VEP_results:
     type: File
     outputSource: run_VEP_sub_wf/VEP
@@ -40,10 +42,17 @@ steps:
       tool_name: tool_name
       strip_info: strip_info
     out: [stripped_vcf]
+  bcftools_filter_vcf:
+    run: ../tools/bcftools_filter_vcf.cwl
+    in:
+      input_vcf: bcftools_strip_info/stripped_vcf
+      include_expression: include_expression
+      output_basename: output_basename
+    out: [filtered_vcf]
   run_annovar_subwf:
     run: ../sub_workflows/kf_annovar_explicit_sub_wf.cwl
     in:
-      input_vcf: bcftools_strip_info/stripped_vcf
+      input_vcf: bcftools_filter_vcf/filtered_vcf
       output_basename: output_basename
       tool_name: tool_name
       ANNOVAR_cache: ANNOVAR_cache
@@ -55,7 +64,7 @@ steps:
   run_snpEff_only_subwf:
     run: ../sub_workflows/kf_snpEff_only_sub_wf.cwl
     in:
-      input_vcf: bcftools_strip_info/stripped_vcf
+      input_vcf: bcftools_filter_vcf/filtered_vcf
       output_basename: output_basename
       tool_name: tool_name
       snpEff_ref_tar_gz: snpEff_ref_tar_gz
@@ -63,7 +72,7 @@ steps:
   run_VEP_sub_wf:
     run: ../sub_workflows/kf_VEP99_sub_wf.cwl
     in:
-      input_vcf: bcftools_strip_info/stripped_vcf
+      input_vcf: bcftools_filter_vcf/filtered_vcf
       output_basename: output_basename
       tool_name: tool_name
       reference: reference
