@@ -1,7 +1,105 @@
 # kf-annotation
 Variant caller annotation repository. Outputs from variant germline and somatic callers need annotation to add context to calls
 
-### Tools
+## Workflows
+Runs tools 1-3 listed in the [Tools](#tools) section
+
+### workflows/kf_caller_only.cwl
+Runs the very basic gene modelong modes of each caller, for each availalbe transcript reference
+
+#### Transcript references:
+1) Annovar: refGene (NCBI), ensGene (ENSEMBL), knownGene (UCSC)
+2) snpEff: hg38 (NCBI), GRCh38.86 (ENSEMBL r86)
+3) Variant Effect Predictor: ENSEMBL r99, RefSeq
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  tool_name: string
+  strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
+  include_expression: {type: string?, doc: "Select variants meeting criteria, for instance, for all but snps: TYPE!=\"snp\""}
+  snpEff_ref_tar_gz: File
+  ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
+  ANNOVAR_run_dbs_ensGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for ensGene protocol? true/false"}
+  ANNOVAR_run_dbs_knownGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for knownGene protocol? true/false"}
+  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
+  VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  VEP_run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+```
+
+#### Outputs
+
+```yaml
+outputs:
+  snpEff_Sift_results:
+    type: File[]
+    outputSource: [run_snpEff_only_subwf/snpEff_hg38, run_snpEff_only_subwf/snpEff_ens]
+  ANNOVAR_results: 
+    type: File[]
+    outputSource: [run_annovar_subwf/ANNOVAR_refGene, run_annovar_subwf/ANNOVAR_ensGene, run_annovar_subwf/ANNOVAR_knownGene]
+    linkMerge: merge_flattened
+  VEP_results:
+    type: File
+    outputSource: run_VEP_sub_wf/VEP
+```
+
+### workflows/kf_caller_dbs_wf.cwl
+Runs gene modeling mentioned in the [Transcript references](#transcript-references) and the database annotations described in the [Database Setup](#database-setup) section
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  tool_name: string
+  strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
+  include_expression: {type: string?, doc: "Select variants meeting criteria, for instance, for all but snps: TYPE!=\"snp\""}
+  snpEff_ref_tar_gz: File
+  gwas_cat_db_file: {type: File, secondaryFiles: [.tbi], doc: "GWAS catalog file"}
+  clinvar_vcf: {type: File, secondaryFiles: [.tbi], doc: "ClinVar VCF reference"}
+  SnpSift_vcf_db_name: {type: string, doc: "List of database names corresponding with each vcf_db_files"}
+  SnpSift_vcf_fields: {type: string, doc: "csv string of fields to pull"}
+  ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ANNOVAR_dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
+  ANNOVAR_cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
+  ANNOVAR_kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }
+  ANNOVAR_esp_db: { type: 'File?', doc: "ESP database tgz downloaded from Annovar" }
+  ANNOVAR_gnomad_db: { type: 'File?', doc: "gnomAD tgz downloaded from Annovar" }
+  ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
+  ANNOVAR_run_dbs_ensGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for ensGene protocol? true/false"}
+  ANNOVAR_run_dbs_knownGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for knownGene protocol? true/false"}
+  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
+  VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  VEP_run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  VEP_cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  VEP_cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+```
+
+#### Outputs
+
+```yaml
+outputs:
+  snpEff_Sift_results:
+    type: File[]
+    outputSource: [run_snpEff_Sift_subwf/snpEff_hg38, run_snpEff_Sift_subwf/snpEff_ens, run_snpEff_Sift_subwf/SnpSift_GWAScat, run_snpEff_Sift_subwf/SnpSift_ClinVar]
+  ANNOVAR_results: 
+    type: File[]
+    outputSource: [run_annovar_subwf/ANNOVAR_refGene, run_annovar_subwf/ANNOVAR_ensGene, run_annovar_subwf/ANNOVAR_knownGene]
+    linkMerge: merge_flattened
+  VEP_results:
+    type: File
+    outputSource: run_VEP_sub_wf/VEP
+```
+
+## Tools
 1) [Annovar](http://annovar.openbioinformatics.org/en/latest/) 2019Oct24
 2) [SnpEff](http://snpeff.sourceforge.net/) v4.3t
 3) [Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) v99
