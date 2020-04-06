@@ -5,7 +5,7 @@ Variant caller annotation repository. Outputs from variant germline and somatic 
 Runs tools 1-3 listed in the [Tools](#tools) section
 
 ### workflows/kf_caller_only.cwl
-Runs the very basic gene modelong modes of each caller, for each availalbe transcript reference
+Runs the very basic gene modeling modes of each annotator, for each available transcript reference
 
 #### Transcript references:
 1) Annovar: refGene (NCBI), ensGene (ENSEMBL), knownGene (UCSC)
