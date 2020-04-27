@@ -1,6 +1,8 @@
 # kf-annotation
 Variant caller annotation repository. Outputs from variant germline and somatic callers need annotation to add context to calls
 
+![data service logo](https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png)
+
 ## Workflows
 Runs tools 1-3 listed in the [Tools](#tools) section
 
