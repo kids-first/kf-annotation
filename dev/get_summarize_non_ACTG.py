@@ -18,7 +18,6 @@ m = 100000
 x = 1
 # track last entry for comparison
 j = 0
-# init matrix
 for line in open(args.fasta):
     if x % m == 0:
         sys.stderr.write("Processed " + str(x) + " lines\n")
