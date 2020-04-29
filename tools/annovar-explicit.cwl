@@ -47,7 +47,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 24000
+    ramMin: $(inputs.ram)
     coresMin: 16
   - class: DockerRequirement
     dockerPull: 'kfdrc/annovar:latest'
@@ -125,6 +125,7 @@ arguments:
       }
       -vcfinput
       -thread 16
+      -maxgenethread 16
       -remove
       -nastring . &&
       bgzip $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.vcf &&
@@ -133,6 +134,7 @@ arguments:
 
 inputs:
   cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ram: {type: int?, default: 32000, doc: "May need to increase this value depending on the size/complexity of input"}
   dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
   cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
   kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }

@@ -17,6 +17,7 @@ inputs:
   SnpSift_vcf_db_name: {type: string, doc: "List of database names corresponding with each vcf_db_files"}
   SnpSift_vcf_fields: {type: string, doc: "csv string of fields to pull"}
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ANNOVAR_ram: {type: int?, default: 32000, doc: "May need to increase this value depending on the size/complexity of input"}
   ANNOVAR_dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
   ANNOVAR_cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
   ANNOVAR_kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }
@@ -68,6 +69,7 @@ steps:
       output_basename: output_basename
       tool_name: tool_name
       ANNOVAR_cache: ANNOVAR_cache
+      ANNOVAR_ram: ANNOVAR_ram
       ANNOVAR_dbscsnv_db: ANNOVAR_dbscsnv_db
       ANNOVAR_cosmic_db: ANNOVAR_cosmic_db
       ANNOVAR_kg_db: ANNOVAR_kg_db
@@ -110,5 +112,3 @@ $namespaces:
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
     value: 3
-  - class: 'sbg:AWSInstanceType'
-    value: c5.4xlarge

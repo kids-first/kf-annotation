@@ -41,7 +41,7 @@ for line in open(args.fasta):
     else:
         for i in range(0, len(line.rstrip("\n")), 1):
             if line[i] in snp_dict:
-                out_vcf.write("\t".join([chrom, str(pos), ".", line[i], snp_dict[line[i]], ".", "GT", "0/1"]) + "\n")
+                out_vcf.write("\t".join([chrom, str(pos), ".", line[i], snp_dict[line[i]], ".\t.\t.", "GT", "0/1"]) + "\n")
             pos += 1
     x += 1
 out_vcf.close()
