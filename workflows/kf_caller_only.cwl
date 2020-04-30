@@ -13,6 +13,7 @@ inputs:
   include_expression: {type: string?, doc: "Select variants meeting criteria, for instance, for all but snps: TYPE!=\"snp\""}
   snpEff_ref_tar_gz: File
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ANNOVAR_ram: {type: int?, default: 32000, doc: "May need to increase this value depending on the size/complexity of input"}
   ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
   ANNOVAR_run_dbs_ensGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for ensGene protocol? true/false"}
   ANNOVAR_run_dbs_knownGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for knownGene protocol? true/false"}
@@ -55,6 +56,7 @@ steps:
       input_vcf: bcftools_filter_vcf/filtered_vcf
       output_basename: output_basename
       tool_name: tool_name
+      ANNOVAR_ram: ANNOVAR_ram
       ANNOVAR_cache: ANNOVAR_cache
       ANNOVAR_run_dbs_refGene: ANNOVAR_run_dbs_refGene
       ANNOVAR_run_dbs_ensGene: ANNOVAR_run_dbs_ensGene
@@ -86,5 +88,3 @@ $namespaces:
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
     value: 3
-  - class: 'sbg:AWSInstanceType'
-    value: c5.4xlarge

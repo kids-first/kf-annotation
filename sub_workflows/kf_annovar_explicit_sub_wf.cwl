@@ -9,6 +9,7 @@ inputs:
   output_basename: string
   tool_name: string
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ANNOVAR_ram: {type: int?, default: 32000, doc: "May need to increase this value depending on the size/complexity of input"}
   ANNOVAR_dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
   ANNOVAR_cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
   ANNOVAR_kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }
@@ -34,6 +35,7 @@ steps:
     run: ../tools/annovar-explicit.cwl
     in:
       cache: ANNOVAR_cache
+      ram: ANNOVAR_ram
       dbscsnv_db: ANNOVAR_dbscsnv_db
       cosmic_db: ANNOVAR_cosmic_db
       kg_db: ANNOVAR_kg_db
@@ -49,6 +51,7 @@ steps:
     run: ../tools/annovar-explicit.cwl
     in:
       cache: ANNOVAR_cache
+      ram: ANNOVAR_ram
       protocol_name: {default: "ensGene"}
       input_vcf: input_vcf
       tool_name: tool_name
@@ -59,6 +62,7 @@ steps:
     run: ../tools/annovar-explicit.cwl
     in:
       cache: ANNOVAR_cache
+      ram: ANNOVAR_ram
       protocol_name: {default: "knownGene"}
       input_vcf: input_vcf
       tool_name: tool_name
