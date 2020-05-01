@@ -99,7 +99,7 @@ arguments:
       -maxgenethread $(inputs.cores)
       -remove
       -nastring .
-      | bgzip -c > $(inputs.input_av.nameroot).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt.gz
+      && bgzip $(inputs.input_av.nameroot).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt
 
 inputs:
   cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
