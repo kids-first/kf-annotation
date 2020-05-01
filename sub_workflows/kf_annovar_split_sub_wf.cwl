@@ -57,9 +57,6 @@ steps:
     scatter: [input_vcf]
     out: [vcf_to_gz_annovar]
   annovar_refgene:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: m5.8xlarge
     run: ../tools/annovar_av_input.cwl
     in:
       cache: ANNOVAR_cache
@@ -72,9 +69,6 @@ steps:
     scatter: [input_av]
     out: [anno_txt]
   annovar_ensgene:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: m5.8xlarge
     run: ../tools/annovar_av_input.cwl
     in:
       cache: ANNOVAR_cache
@@ -87,9 +81,6 @@ steps:
     scatter: [input_av]
     out: [anno_txt]
   annovar_knowngene:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: m5.8xlarge
     run: ../tools/annovar_av_input.cwl
     in:
       cache: ANNOVAR_cache

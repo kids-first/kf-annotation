@@ -20,8 +20,7 @@ arguments:
 
       echo "$(inputs.header_str)" | bgzip -c > $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt.gz
 
-      dirname $(inputs.input_anno[0].dirname)
-      | xargs -IDN find DN -name "*$(inputs.input_anno[0].nameext)"
+      find $(inputs.input_anno[0].dirname.replace(/_\d+_s$/, ""))* -name "*$(inputs.input_anno[0].nameext)"
       | sort
       | xargs -IFN zcat FN
       | grep -vE "^Chr"
