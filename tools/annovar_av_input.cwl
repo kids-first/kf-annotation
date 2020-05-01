@@ -19,8 +19,6 @@ arguments:
     valueFrom: >-
       pipefail
 
-      printf %s\\n "$-"
-
       tar xvf $(inputs.cache.path) &&
       ${
         var cmd = "";
@@ -46,13 +44,7 @@ arguments:
         }
       }
 
-      printf %s\\n "$-"
-
       zcat $(inputs.input_av.path) > $(inputs.input_av.nameroot)
-
-      /bin/bash -c set -e -o pipefail
-
-      printf %s\\n "$-"
 
       perl /home/TOOLS/tools/annovar/current/bin/table_annovar.pl
       $(inputs.input_av.nameroot)

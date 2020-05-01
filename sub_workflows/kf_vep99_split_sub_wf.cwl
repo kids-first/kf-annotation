@@ -15,6 +15,7 @@ inputs:
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   reference_dict : File
   scatter_bed: File
+  VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
   VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
@@ -54,6 +55,7 @@ steps:
       cores: cores
       ram: ram
       buffer_size: VEP_buffer_size
+      run_stats: VEP_run_stats
       cache: VEP_cache
       run_cache_existing: VEP_run_cache_existing
       run_cache_af: VEP_run_cache_af
