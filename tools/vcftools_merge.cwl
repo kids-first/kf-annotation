@@ -13,7 +13,7 @@ requirements:
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:
-  - position: 0
+  - position: 1
     shellQuote: false
     valueFrom: >-
       set -eo pipefail

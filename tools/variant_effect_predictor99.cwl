@@ -81,8 +81,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 24000
-    coresMin: 16
+    ramMin: ${return inputs.ram * 1000}
+    coresMin: $(inputs.cores)
   - class: DockerRequirement
     dockerPull: 'ensemblorg/ensembl-vep:release_99.0'
 baseCommand: ["/bin/bash", "-c"]
@@ -111,9 +111,10 @@ arguments:
       --output_file STDOUT
       --stats_file $(inputs.output_basename)_stats.$(inputs.tool_name).html
       --warning_file $(inputs.output_basename)_warnings.$(inputs.tool_name).txt
+      --buffer_size $(inputs.buffer_size)
       --vcf
       --offline
-      --fork 16
+      --fork $(inputs.cores)
       --ccds
       --uniprot
       --symbol
@@ -134,6 +135,9 @@ arguments:
 
 inputs:
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
+  ram: {type: int?, default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
