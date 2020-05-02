@@ -13,6 +13,8 @@ inputs:
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
   reference_dict : File
   scatter_bed: File
+  scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
+  bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
   ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
   ANNOVAR_run_dbs_ensGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for ensGene protocol? true/false"}
   ANNOVAR_run_dbs_knownGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for knownGene protocol? true/false"}
@@ -34,13 +36,10 @@ steps:
     in:
       interval_list: scatter_bed
       reference_dict: reference_dict
-      scatter_ct: {default: 50}
-      bands: {default: 80000000}
+      scatter_ct: scatter_ct
+      bands: bands
     out: [output]
   bedtools_split_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge
     run: ../tools/bedtools_split_vcf.cwl
     in:
       input_vcf: input_vcf

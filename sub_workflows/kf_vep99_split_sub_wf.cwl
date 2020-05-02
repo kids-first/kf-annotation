@@ -15,6 +15,8 @@ inputs:
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   reference_dict : File
   scatter_bed: File
+  scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
+  bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
   VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
@@ -34,13 +36,10 @@ steps:
     in:
       interval_list: scatter_bed
       reference_dict: reference_dict
-      scatter_ct: {default: 50}
-      bands: {default: 80000000}
+      scatter_ct: scatter_ct
+      bands: bands
     out: [output]
   bedtools_split_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge
     run: ../tools/bedtools_split_vcf.cwl
     in:
       input_vcf: input_vcf
