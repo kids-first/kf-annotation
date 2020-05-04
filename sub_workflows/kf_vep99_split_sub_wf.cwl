@@ -8,6 +8,7 @@ requirements:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
+  header_file: {type: File, doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file"}
   output_basename: string
   tool_name: string
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
@@ -29,7 +30,7 @@ inputs:
 outputs:
   VEP: 
     type: File
-    outputSource: merge_vep_vcf/merged_vcf
+    outputSource: zcat_merge_vcf/zcat_merged_vcf
 steps:
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
@@ -40,6 +41,9 @@ steps:
       bands: bands
     out: [output]
   bedtools_split_vcf:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.4xlarge
     run: ../tools/bedtools_split_vcf.cwl
     in:
       input_vcf: input_vcf
@@ -65,16 +69,19 @@ steps:
       tool_name: tool_name
     scatter: input_vcf
     out: [output_vcf, output_html, warn_txt]
-  merge_vep_vcf:
-    run: ../tools/gatk_mergevcfs.cwl
+  zcat_merge_vcf:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.2xlarge;ebs-gp2;2048
+    run: ../tools/zcat_vcf.cwl
     in:
       input_vcfs: vep_annotate/output_vcf
+      header_file: header_file
       output_basename: output_basename
-      reference_dict: reference_dict
       tool_name: tool_name
-    out: [merged_vcf]
+    out: [zcat_merged_vcf]
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 8
+    value: 25

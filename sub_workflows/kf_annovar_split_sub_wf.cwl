@@ -7,7 +7,7 @@ requirements:
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
-  tool_name: string
+  wf_tool_name: string
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
@@ -40,6 +40,9 @@ steps:
       bands: bands
     out: [output]
   bedtools_split_vcf:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.4xlarge
     run: ../tools/bedtools_split_vcf.cwl
     in:
       input_vcf: input_vcf
@@ -63,7 +66,7 @@ steps:
       cores: cores
       protocol_name: {default: "refGene"}
       input_av: annovar_preprocess/vcf_to_gz_annovar
-      tool_name: tool_name
+      tool_name: wf_tool_name
       run_dbs: ANNOVAR_run_dbs_refGene
     scatter: [input_av]
     out: [anno_txt]
@@ -75,7 +78,7 @@ steps:
       cores: cores
       protocol_name: {default: "ensGene"}
       input_av: annovar_preprocess/vcf_to_gz_annovar
-      tool_name: tool_name
+      tool_name: wf_tool_name
       run_dbs: ANNOVAR_run_dbs_ensGene
     scatter: [input_av]
     out: [anno_txt]
@@ -87,33 +90,42 @@ steps:
       cores: cores
       protocol_name: {default: "knownGene"}
       input_av: annovar_preprocess/vcf_to_gz_annovar
-      tool_name: tool_name
+      tool_name: wf_tool_name
       run_dbs: ANNOVAR_run_dbs_knownGene
     scatter: [input_av]
     out: [anno_txt]
   merge_refgene_results:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.2xlarge;ebs-gp2;2048
     run: ../tools/merge_annovar_txt.cwl
     in:
       input_anno: annovar_refgene/anno_txt
       protocol_name: {default: "refGene"}
       output_basename: output_basename
-      tool_name: tool_name
+      tool_name: wf_tool_name
     out: [merged_annovar_txt]
   merge_ensgene_results:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.2xlarge;ebs-gp2;2048
     run: ../tools/merge_annovar_txt.cwl
     in:
       input_anno: annovar_ensgene/anno_txt
       protocol_name: {default: "ensGene"}
       output_basename: output_basename
-      tool_name: tool_name
+      tool_name: wf_tool_name
     out: [merged_annovar_txt]
   merge_knowngene_results:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.2xlarge;ebs-gp2;2048
     run: ../tools/merge_annovar_txt.cwl
     in:
       input_anno: annovar_knowngene/anno_txt
       protocol_name: {default: "knownGene"}
       output_basename: output_basename
-      tool_name: tool_name
+      tool_name: wf_tool_name
     out: [merged_annovar_txt]
 
 $namespaces:
