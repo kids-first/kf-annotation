@@ -7,7 +7,7 @@ requirements:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  header_file: {type: File, doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file"}
+  header_file: {type: 'File[]', doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file. Really only this part will change: ##SnpEffCmd=\"SnpEff  hg38kg"}
   reference_dict: File
   snpeff_ref_name: {type: 'string[]', doc: "List of snpEff refs to run. Loaded cache must have all that you plan to run."}
   snpeff_merge_ext: {type: 'string[]', doc: "For file naming purposes, tool name + ref names, in same order as input ref names"}
@@ -67,8 +67,8 @@ steps:
       output_basename: output_basename
       header_file: header_file
       tool_name: snpeff_merge_ext
-    scatter: [input_vcfs, tool_name]
-    scatterMethod: dotproduct
+    scatter: [input_vcfs, tool_name, header_file]
+    scatterMethod: nested_crossproduct
     out: [zcat_merged_vcf]
 
 $namespaces:

@@ -9,7 +9,7 @@ requirements:
     ramMin: 16000
     coresMin: 8
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vcfutils:latest'
+    dockerPull: 'kfdrc/samtools:1.9'
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:
@@ -24,7 +24,7 @@ arguments:
       | sort -V
       | xargs -IFN zcat FN
       | grep -vE "^Chr"
-      | bgzip -c >> $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt.gz
+      | bgzip -c -@ 8 >> $(inputs.output_basename).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt.gz
 
 inputs:
     input_anno: {type: 'File[]', doc: "List of files from annovar scatter job"}
