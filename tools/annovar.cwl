@@ -51,12 +51,12 @@ requirements:
     coresMin: 16
   - class: DockerRequirement
     dockerPull: 'kfdrc/annovar:latest'
-baseCommand: ["/bin/bash", "-c"]
+baseCommand: [set,-eo]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      set -eo pipefail
+      pipefail
 
       tar xvf $(inputs.cache.path) &&
       ${

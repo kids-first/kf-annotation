@@ -185,6 +185,7 @@ The databases that will be run are the following:
 - `gnomad30_genome`
 
 Each of these databases must be provided in the `additional_dbs` file list input.
+Estimated run time for 7M snps, all transcript models, all DBs, 3 c5.4xlarge instances: 43 minutes, cost $0.34 using spot instances, $0.73 using direct instances
 
 ### Running SnpEff
 #### [Without DBs](https://github.com/kids-first/kf-annotation/blob/master/tools/snpeff_annotate.cwl)
@@ -206,6 +207,8 @@ Moreover, you need to provide the additional databases as three sets of inputs:
 | UK10K_COHORT.20160215.sites.vcf.gz                             | uk10k        | SNP,GENE,CDS                |
 | clinvar-2020-03-17.vcf.gz                                      | clinvar      | CDS_SIZES,GRCh38_POSITION   |
 
+Estimated run time for 7M snps, hg38 + GRCh38.86 transcript models, GWAS and clivar DBs, 2 c5.4xlarge instances: 30 minutes, cost $0.15 using spot instance, $0.34 using direct instance
+
 ### Running [Variant Effect Predictor](https://github.com/kids-first/kf-annotation/blob/master/tools/variant_effect_predictor99.cwl)
 #### Without DBs
 To run VEP without additional DBs, simply set `run_cache_existing` to `false`, `run_cache_af` to `false`, and do not provide the following inputs:
@@ -217,10 +220,12 @@ To run VEP without additional DBs, simply set `run_cache_existing` to `false`, `
 #### With DBs
 As many or as few extra databases you provide will be used in annotation; additionally, make sure to set `run_cache_dbs` to `true` as this will add the additional annotations from databases that come with the cache.. All extra databases but phylop are used as plugins. The creation of these files is detailed in the documentation for the plugins on the VEP github.
 
+Estimated run time for 7M snps, refSeq + ENSEMBL transcript models, all DBs, 1 c5.4xlarge instance: 4 hrs, 30 minutes, cost $1.44 using spot instance, $3.17 using direct instance
+
 ### Running [WGSA](https://github.com/kids-first/kf-annotation/blob/master/tools/wgsa_annotate.cwl)
 This is a comprehensive annotation package that has a precomputed reference for all gene models from ANNOVAR, snpEff, and VEP for all possible snps in hg38 and hg19.  For indels, it will run all three tools (if called for in the config file), as well as many additional databases, most of which come from [here](http://web.corral.tacc.utexas.edu/WGSAdownload/).
 
-#### Inputs:
+#### Inputs
 
 ```yaml
 inputs:
@@ -259,7 +264,7 @@ In general, if you disbale a database in the settings file, you can omit loading
 
  Recommended settings file for running recommended databases can be found in the `references/wgsa_all_recommended_db_settings.txt` file.
 
- #### Outputs:
+ #### Outputs
 
  ```yaml
  outputs:
@@ -289,3 +294,248 @@ In general, if you disbale a database in the settings file, you can omit loading
       glob: '*.settings.txt.sh'
     doc: "WGSA-generated shell script"
 ```
+
+## Subworkflows
+The main workflows above run subworkflows for for better code organization, and can be run on their own to run only one annotator instead of all.
+See [Databases](#databases) section for how to obtain database inputs for each subworkflow
+
+
+### sub_workflows/kf_annovar_explicit_sub_wf.cwl
+This subworkflow will run annovar three times, once per transcript reference, with options to include/run additional databases with each run instance.
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  tool_name: string
+  ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  ANNOVAR_ram: {type: int?, default: 32000, doc: "May need to increase this value depending on the size/complexity of input"}
+  ANNOVAR_dbscsnv_db: { type: 'File?', doc: "dbscSNV database tgz downloaded from Annovar" }
+  ANNOVAR_cosmic_db: { type: 'File?', doc: "COSMIC database tgz downloaded from COSMIC" }
+  ANNOVAR_kg_db: { type: 'File?', doc: "1000genomes database tgz downloaded from Annovar" }
+  ANNOVAR_esp_db: { type: 'File?', doc: "ESP database tgz downloaded from Annovar" }
+  ANNOVAR_gnomad_db: { type: 'File?', doc: "gnomAD tgz downloaded from Annovar" }
+  ANNOVAR_run_dbs_refGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for refGene protocol? true/false"}
+  ANNOVAR_run_dbs_ensGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for ensGene protocol? true/false"}
+  ANNOVAR_run_dbs_knownGene: { type: boolean, doc: "Should the additional dbs be processed in this run of the tool for knownGene protocol? true/false"}
+```
+
+#### Outputs
+
+```yaml
+outputs:
+  ANNOVAR_refGene: 
+    type: File[]
+    outputSource: [annovar_refgene/anno_vcf, annovar_refgene/anno_txt]
+  ANNOVAR_ensGene: 
+    type: File[]
+    outputSource: [annovar_ensgene/anno_vcf, annovar_ensgene/anno_txt]
+  ANNOVAR_knownGene:
+    type: File[]
+    outputSource: [annovar_knowngene/anno_vcf, annovar_knowngene/anno_txt]
+```
+
+
+### sub_workflows/kf_snpEff_only_sub_wf.cwl
+This subworkflow will run snpEff twice, once per transcript reference*, with options to include/run additional databases with each run instance.
+* hg38kg is missing from this! Should be made more flexible with arrray input...
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  tool_name: string
+  snpEff_ref_tar_gz: File
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
+```
+
+#### Outputs
+
+```yaml
+outputs:
+  snpEff_hg38: 
+    type: File
+    outputSource: snpeff_hg38/output_vcf
+  snpEff_ens: 
+    type: File
+    outputSource: snpeff_ens/output_vcf
+```
+
+### sub_workflows/kf_VEP99_sub_wf.cwl
+This subworkflow will run VEP r99
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  tool_name: string
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
+  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
+  VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  VEP_run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  VEP_cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  VEP_cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+```
+
+#### Outputs
+
+```yaml
+outputs:
+  VEP: 
+    type: File
+    outputSource: vep_annotate/output_vcf
+```
+
+## Split subworkflows
+In the same directory as the subworkflows above, are some heavy duty ones.
+Be sure to edit/adjust parallele instances before running.
+These can be costly and meant to be run on large inputs - i.e. a simulated snp vcf file with 9B snps!
+
+### sub_workflows/kf_annovar_split_sub_wf.cwl
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  wf_tool_name: string
+  protocol_list: {type: 'string[]', doc: "List of protocols to scatter on. See tool enum for choices"}
+  ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
+  reference_dict : File
+  scatter_bed: File
+  scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
+  bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
+  run_dbs: { type: 'boolean[]', doc: "Should the additional dbs be processed in this run of the tool for each protocol in protocol list? true/false"}
+```
+Deviations from default:
+ - `scatter_ct`: 200
+ - `bands`: 1000000
+ - `cores`: 40
+ - `ram`: 128
+
+#### Outputs
+
+```yaml
+outputs:
+  ANNOVAR_results: 
+    type: 'File[]'
+    outputSource: merge_results/merged_annovar_txt
+```
+
+Latest precomputed data generation stats:
+ - 9B simulated input snps.
+ - Annovar run with all three transcript refs
+   - Max parallel instances set to 20
+   - Run time: 6 hours, cost $287.90
+   - Merge step 3 hours, ~$1.43
+   - Max parallel instances set to 60, all spot
+
+### sub_workflows/kf_snpEff_split_sub_wf.cwl
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  header_file: {type: 'File[]', doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file. Really only this part will change: ##SnpEffCmd=\"SnpEff  hg38kg"}
+  reference_dict: File
+  snpeff_ref_name: {type: 'string[]', doc: "List of snpEff refs to run. Loaded cache must have all that you plan to run."}
+  snpeff_merge_ext: {type: 'string[]', doc: "For file naming purposes, tool name + ref names, in same order as input ref names"}
+  scatter_bed: File
+  scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
+  bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
+  output_basename: string
+  wf_tool_name: string
+  snpEff_ref_tar_gz: {type: File, doc: "Pre-built snpeff cache with all refs that are to be run in wf"}
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
+```
+
+Deviations from default:
+ - `scatter_ct`: 200
+ - `bands`: 1000000
+ - `cores`: 36
+ - `ram`: 72
+
+ #### Outputs
+
+ ```yaml
+ outputs:
+  snpEff_results: 
+    type: 'File[]'
+    outputSource: merge_snpeff_vcf/zcat_merged_vcf
+```
+
+Latest precomputed data generation stats:
+ - 9B simulated input snps.
+ - snpEff run with all hg38 and GRCh38
+   - Max parallel instances set to 20
+   - Run time: 4 hours, cost $38.61
+   - Merge step 11 hours, $4.86 for hg38 and GRCh38 refs. All spot instances
+ - snpEff run with hg38kg
+   - Max parallel instance set to 8
+   - Run time snpEff 5 hrs, $18.65
+   - Merge (after merge optimization): 5.5 hours, $2.38
+
+### sub_workflows/kf_vep99_split_sub_wf.cwl
+
+#### Inputs
+
+```yaml
+inputs:
+  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  header_file: {type: File, doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file"}
+  output_basename: string
+  tool_name: string
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
+  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  reference_dict : File
+  scatter_bed: File
+  scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
+  bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
+  VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
+  VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
+  VEP_buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
+  VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  VEP_run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  VEP_cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  VEP_cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+```
+
+Deviations from default:
+ - `scatter_ct`: 200
+ - `bands`: 1000000
+ - `cores`: 36
+ - `ram`: 72
+
+### Outputs
+
+```yaml
+outputs:
+  VEP: 
+    type: File
+    outputSource: zcat_merge_vcf/zcat_merged_vcf
+```
+
+Latest precomputed data generation stats:
+ - 9B simulated input snps.
+ - VEP run with all refSeq and ENSEMBL99
+   - Max parallel instances set to 25
+   - Run time (including failed merge step): 2 days 2 hours, cost $478
+   - Est run time and cost without failed merge: 25 hrs, $474
+   - Merge step after optimization: 22 hrs, $9.62

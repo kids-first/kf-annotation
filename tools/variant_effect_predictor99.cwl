@@ -81,8 +81,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 24000
-    coresMin: 16
+    ramMin: ${return inputs.ram * 1000}
+    coresMin: $(inputs.cores)
   - class: DockerRequirement
     dockerPull: 'ensemblorg/ensembl-vep:release_99.0'
 baseCommand: ["/bin/bash", "-c"]
@@ -109,11 +109,20 @@ arguments:
       /opt/vep/src/ensembl-vep/vep
       --input_file $(inputs.input_vcf.path)
       --output_file STDOUT
-      --stats_file $(inputs.output_basename)_stats.$(inputs.tool_name).html
+      ${
+        if (inputs.run_stats){
+          var arg = " --stats_file " + inputs.output_basename + "_stats." + inputs.tool_name + ".html ";
+          return arg;
+        }
+        else{
+          return " --no_stats ";
+        }
+      }
       --warning_file $(inputs.output_basename)_warnings.$(inputs.tool_name).txt
+      --buffer_size $(inputs.buffer_size)
       --vcf
       --offline
-      --fork 16
+      --fork $(inputs.cores)
       --ccds
       --uniprot
       --symbol
@@ -134,10 +143,14 @@ arguments:
 
 inputs:
   input_vcf: { type: File, secondaryFiles: [.tbi], doc: "VCF file (with associated index) to be annotated" }
+  ram: {type: int?, default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
+  cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
   reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
   cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
   run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
   dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
@@ -148,5 +161,5 @@ inputs:
 
 outputs:
   output_vcf: { type: File, outputBinding: { glob: '*.vcf.gz' }, secondaryFiles: ['.tbi'] }
-  output_html: { type: File, outputBinding: { glob: '*.html' } }
-  warn_txt: { type: 'File?', outputBinding: { glob: '*.txt' } }
+  output_html: { type: 'File?', outputBinding: { glob: '*.html' }}
+  warn_txt: { type: 'File?', outputBinding: { glob: '*.txt' }}
