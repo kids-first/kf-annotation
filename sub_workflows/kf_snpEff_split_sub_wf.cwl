@@ -4,6 +4,7 @@ id: kf_snpEff_split_sub_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement
+  - class: MultipleInputFeatureRequirement
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
@@ -67,8 +68,9 @@ steps:
       output_basename: output_basename
       header_file: header_file
       tool_name: snpeff_merge_ext
+    
     scatter: [input_vcfs, tool_name, header_file]
-    scatterMethod: nested_crossproduct
+    scatterMethod: dotproduct
     out: [zcat_merged_vcf]
 
 $namespaces:
