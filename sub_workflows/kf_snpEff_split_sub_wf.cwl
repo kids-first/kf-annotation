@@ -8,18 +8,18 @@ requirements:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  header_file: {type: 'File[]', doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file. Really only this part will change: ##SnpEffCmd=\"SnpEff  hg38kg"}
+  # header_file: {type: 'File[]', doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file. Really only this part will change: ##SnpEffCmd=\"SnpEff  hg38kg"}
   reference_dict: File
-  # snpeff_ref_name:
-  #   type:
-  #     - "null"
-  #     - type: array
-  #       items:
-  #           type: enum
-  #           name: snpeff_ref_name
-  #           symbols: [hg38,hg38kg,GRCh38.86]
-  snpeff_ref_name: {type: 'string[]', doc: "Array of tx ref inputs"}
-  snpeff_merge_ext: {type: 'string[]', doc: "For file naming purposes, tool name + ref names, in same order as input ref names"}
+  snpeff_ref_name:
+    type:
+      - "null"
+      - type: array
+        items:
+            type: enum
+            name: snpeff_ref_name
+            symbols: [hg38,hg38kg,GRCh38.86]
+  # snpeff_ref_name: {type: 'string[]', doc: "Array of tx ref inputs"}
+  # snpeff_merge_ext: {type: 'string[]', doc: "For file naming purposes, tool name + ref names, in same order as input ref names"}
   scatter_bed: File
   scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
   bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
@@ -30,10 +30,14 @@ inputs:
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
 
 outputs:
-  snpEff_results: 
-    type: 'File[]'
-    outputSource: merge_snpeff_vcf/zcat_merged_vcf
-
+  # snpEff_results: 
+  #   type:
+  #     type: array
+  #     items:
+  #         type: array
+  #         items: File
+  #   outputSource: run_snpeff/output_vcf
+  snpEff_results: {type: 'Directory[]', outputSource: output_to_dir/output_dirs}
 steps:
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
@@ -66,20 +70,28 @@ steps:
     scatter: [reference_name, input_vcf]
     scatterMethod: nested_crossproduct
     out: [output_vcf]
-  merge_snpeff_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.2xlarge;ebs-gp2;2048
-    run: ../tools/zcat_vcf.cwl
+  output_to_dir:
+    run: ../tools/output_to_dir.cwl
     in:
-      input_vcfs: {source: run_snpeff/output_vcf, linkMerge: merge_nested}
-      output_basename: output_basename
-      header_file: header_file
-      tool_name: snpeff_merge_ext
+      input_scatter: run_snpeff/output_vcf
+      protocol_name: snpeff_ref_name
+      tool_name: wf_tool_name
+    out: [output_dirs]
+
+  # merge_snpeff_vcf:
+  #   hints:
+  #     - class: 'sbg:AWSInstanceType'
+  #       value: c5.2xlarge;ebs-gp2;2048
+  #   run: ../tools/zcat_vcf.cwl
+  #   in:
+  #     input_vcfs: {source: run_snpeff/output_vcf, linkMerge: merge_nested}
+  #     output_basename: output_basename
+  #     header_file: header_file
+  #     tool_name: snpeff_merge_ext
     
-    scatter: [input_vcfs, tool_name, header_file]
-    scatterMethod: dotproduct
-    out: [zcat_merged_vcf]
+  #   scatter: [input_vcfs, tool_name, header_file]
+  #   scatterMethod: dotproduct
+  #   out: [zcat_merged_vcf]
 
 $namespaces:
   sbg: https://sevenbridges.com

@@ -19,9 +19,13 @@ inputs:
   run_dbs: { type: 'boolean[]', doc: "Should the additional dbs be processed in this run of the tool for each protocol in protocol list? true/false"}
 
 outputs:
-  ANNOVAR_results: 
-    type: 'File[]'
-    outputSource: merge_results/merged_annovar_txt
+  snpEff_results: 
+    type:
+        type: array
+        items:
+            type: array
+            items: File
+    outputSource: run_annovar/anno_txt
 
 steps:
   gatk_intervallisttools:
@@ -64,19 +68,19 @@ steps:
     scatter: [input_av, protocol_name, run_dbs]
     scatterMethod: nested_crossproduct
     out: [anno_txt]
-  merge_results:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.2xlarge;ebs-gp2;2048
-    run: ../tools/merge_annovar_txt.cwl
-    in:
-      input_anno: run_annovar/anno_txt
-      protocol_name: protocol_list
-      output_basename: output_basename
-      tool_name: wf_tool_name
-    scatter: [input_anno, protocol_name]
-    scatterMethod: nested_crossproduct
-    out: [merged_annovar_txt]
+  # merge_results:
+  #   hints:
+  #     - class: 'sbg:AWSInstanceType'
+  #       value: c5.2xlarge;ebs-gp2;2048
+  #   run: ../tools/merge_annovar_txt.cwl
+  #   in:
+  #     input_anno: run_annovar/anno_txt
+  #     protocol_name: protocol_list
+  #     output_basename: output_basename
+  #     tool_name: wf_tool_name
+  #   scatter: [input_anno, protocol_name]
+  #   scatterMethod: nested_crossproduct
+  #   out: [merged_annovar_txt]
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
