@@ -65,7 +65,8 @@ inputs:
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   ram: {type: int?, default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
   input_vcf: { type: File,  secondaryFiles: [.tbi] , doc: "VCF file (with associated index) to be annotated" }
-  reference_name: { type: { type: enum, name: reference_name, symbols: [hg38,hg38kg,GRCh38.86] }, doc: "Reference genome used to generate input VCF"}
+  #reference_name: { type: { type: enum, name: reference_name, symbols: [hg38,hg38kg,GRCh38.86] }, doc: "Reference genome used to generate input VCF"}
+  reference_name: {type: 'string[]', doc: "Array of tx ref inputs"}
   output_basename: { type: string, doc: "String that will be used in the output filenames" }
   tool_name: { type: string, doc: "Tool name to be used in output filenames" }
 

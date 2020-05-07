@@ -10,7 +10,15 @@ inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   header_file: {type: 'File[]', doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file. Really only this part will change: ##SnpEffCmd=\"SnpEff  hg38kg"}
   reference_dict: File
-  snpeff_ref_name: {type: 'string[]', doc: "List of snpEff refs to run. Loaded cache must have all that you plan to run."}
+  # snpeff_ref_name:
+  #   type:
+  #     - "null"
+  #     - type: array
+  #       items:
+  #           type: enum
+  #           name: snpeff_ref_name
+  #           symbols: [hg38,hg38kg,GRCh38.86]
+  snpeff_ref_name: {type: 'string[]', doc: "Array of tx ref inputs"}
   snpeff_merge_ext: {type: 'string[]', doc: "For file naming purposes, tool name + ref names, in same order as input ref names"}
   scatter_bed: File
   scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
@@ -64,7 +72,7 @@ steps:
         value: c5.2xlarge;ebs-gp2;2048
     run: ../tools/zcat_vcf.cwl
     in:
-      input_vcfs: run_snpeff/output_vcf
+      input_vcfs: {source: run_snpeff/output_vcf, linkMerge: merge_nested}
       output_basename: output_basename
       header_file: header_file
       tool_name: snpeff_merge_ext
