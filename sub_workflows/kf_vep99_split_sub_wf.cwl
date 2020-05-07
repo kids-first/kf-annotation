@@ -28,9 +28,7 @@ inputs:
   VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
 
 outputs:
-  vep_results: 
-    type: 'File[]'
-    outputSource: vep_annotate/output_vcf
+  vep_results: {type: Directory, outputSource: output_to_dir/output_dirs}
 steps:
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
@@ -69,17 +67,14 @@ steps:
       tool_name: tool_name
     scatter: input_vcf
     out: [output_vcf, output_html, warn_txt]
-  # zcat_merge_vcf:
-  #   hints:
-  #     - class: 'sbg:AWSInstanceType'
-  #       value: c5.2xlarge;ebs-gp2;2048
-  #   run: ../tools/zcat_vcf.cwl
-  #   in:
-  #     input_vcfs: vep_annotate/output_vcf
-  #     header_file: header_file
-  #     output_basename: output_basename
-  #     tool_name: tool_name
-  #   out: [zcat_merged_vcf]
+  output_to_dir:
+    run: ../tools/output_to_dir.cwl
+    in:
+      input_array: vep_annotate/output_vcf
+      tool_name: tool_name
+      output_basename: output_basename
+    out: [output_dirs]
+
 $namespaces:
   sbg: https://sevenbridges.com
 hints:

@@ -8,6 +8,15 @@ inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
   wf_tool_name: string
+  protocol_list:
+    type:
+      - "null"
+      - type: array
+        items:
+            type: enum
+            name: protocol_list
+            symbols: [ensGene, knownGene, refGene]
+
   protocol_list: {type: 'string[]', doc: "List of protocols to scatter on. See tool enum for choices"}
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
@@ -19,13 +28,7 @@ inputs:
   run_dbs: { type: 'boolean[]', doc: "Should the additional dbs be processed in this run of the tool for each protocol in protocol list? true/false"}
 
 outputs:
-  snpEff_results: 
-    type:
-        type: array
-        items:
-            type: array
-            items: File
-    outputSource: run_annovar/anno_txt
+  ANNOVAR_results: {type: Directory, outputSource: output_to_dir/output_dirs}
 
 steps:
   gatk_intervallisttools:
@@ -68,19 +71,16 @@ steps:
     scatter: [input_av, protocol_name, run_dbs]
     scatterMethod: nested_crossproduct
     out: [anno_txt]
-  # merge_results:
-  #   hints:
-  #     - class: 'sbg:AWSInstanceType'
-  #       value: c5.2xlarge;ebs-gp2;2048
-  #   run: ../tools/merge_annovar_txt.cwl
-  #   in:
-  #     input_anno: run_annovar/anno_txt
-  #     protocol_name: protocol_list
-  #     output_basename: output_basename
-  #     tool_name: wf_tool_name
-  #   scatter: [input_anno, protocol_name]
-  #   scatterMethod: nested_crossproduct
-  #   out: [merged_annovar_txt]
+  
+  output_to_dir:
+    run: ../tools/output_to_dir.cwl
+    in:
+      input_scatter: run_annovar/anno_txt
+      protocol_name: protocol_list
+      tool_name: wf_tool_name
+      output_basename: output_basename
+    out: [output_dirs]
+
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
