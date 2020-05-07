@@ -22,8 +22,8 @@ arguments:
           var cmd = "";
           var result_dir = inputs.output_basename + "_" + inputs.tool_name;
           var i;
-          if(inputs.input_scatter){
-            cmd += "mkdir " + result_dir + ";";
+          cmd += "mkdir " + result_dir + ";";
+          if(inputs.input_scatter != null){
             for (i = 0; i < inputs.protocol_name.length; i++) {
                 var out_dir = result_dir + "/" + inputs.protocol_name[i];
                 cmd += "mkdir " + out_dir + ";";
@@ -39,11 +39,11 @@ arguments:
             }
           }
             else{
-                for (i=0; j< inputs.input_array.length; i++){
-                    cmd += "echo \"cp " + inputs.input_array[i].path + " " + result_dir + "/" + j.toString()
+                for (i=0; i< inputs.input_array.length; i++){
+                    cmd += "echo \"cp " + inputs.input_array[i].path + " " + result_dir + "/" + i.toString()
                     + "_" + inputs.input_array[i].basename + "\" >> cmd_list.txt;";
                     if (inputs.input_array[i].secondaryFiles){
-                      cmd += "echo \"cp " + inputs.input_array[i].secondaryFiles[0].path + " " + result_dir + "/" + j.toString()
+                      cmd += "echo \"cp " + inputs.input_array[i].secondaryFiles[0].path + " " + result_dir + "/" + i.toString()
                     + "_" + inputs.input_array[i].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
                     }
             }
@@ -55,10 +55,11 @@ arguments:
 inputs:
   input_scatter:
     type:
-      type: array
-      items:
-        type: array
-        items: File?
+      - 'null'
+      - type: array
+        items:
+          type: array
+          items: File
   input_array: 'File[]?'
   protocol_name: 'string[]?'
   output_basename: string

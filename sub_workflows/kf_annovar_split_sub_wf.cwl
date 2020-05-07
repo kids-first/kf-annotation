@@ -16,8 +16,6 @@ inputs:
             type: enum
             name: protocol_list
             symbols: [ensGene, knownGene, refGene]
-
-  protocol_list: {type: 'string[]', doc: "List of protocols to scatter on. See tool enum for choices"}
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}

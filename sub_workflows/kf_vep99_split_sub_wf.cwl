@@ -8,7 +8,6 @@ requirements:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  header_file: {type: File, doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file"}
   output_basename: string
   tool_name: string
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
