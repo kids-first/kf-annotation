@@ -23,20 +23,33 @@ arguments:
           var result_dir = inputs.output_basename + "_" + inputs.tool_name;
           var i;
           cmd += "mkdir " + result_dir + ";";
+          var out_dirs = []
+          var protocol_dict = new Object();
           if(inputs.input_scatter != null){
             for (i = 0; i < inputs.protocol_name.length; i++) {
-                var out_dir = result_dir + "/" + inputs.protocol_name[i];
-                cmd += "mkdir " + out_dir + ";";
-                var j = 0;
-                for (j=0; j< inputs.input_scatter[i].length; j++){
-                    cmd += "echo \"cp " + inputs.input_scatter[i][j].path + " " + out_dir + "/" + j.toString()
-                    + "_" + inputs.input_scatter[i][j].basename + "\" >> cmd_list.txt;";
-                    if (inputs.input_scatter[i][j].secondaryFiles){
-                      cmd += "echo \"cp " + inputs.input_scatter[i][j].secondaryFiles[0].path + " " + out_dir + "/" + j.toString()
-                    + "_" + inputs.input_scatter[i][j].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
-                    }
-                }
+                out_dirs.push(result_dir + "/" + inputs.protocol_name[i]);
+                cmd += "mkdir " + out_dirs[i] + ";";
+                protocol_dict[inputs.protocol_name[i]] = 0;
             }
+              i = 0;
+              for (i=0; i< inputs.input_scatter.length; i++){
+                  var j = 0;
+                  for (j = 0; j < inputs.input_scatter[i].length; j++){
+                    var k = 0;
+                    for (k = 0; k < out_dirs.length; k++){
+                      if (inputs.input_scatter[i][j].basename.includes(inputs.protocol_name[k])){
+                        cmd += "echo \"cp " + inputs.input_scatter[i][j].path + " " + out_dirs[k] + "/" + protocol_dict[inputs.protocol_name[k]].toString()
+                        + "_" + inputs.input_scatter[i][j].basename + "\" >> cmd_list.txt;";
+                        if (inputs.input_scatter[i][j].secondaryFiles){
+                          cmd += "echo \"cp " + inputs.input_scatter[i][j].secondaryFiles[0].path + " " + out_dirs[k] + "/" + protocol_dict[inputs.protocol_name[k]].toString()
+                        + "_" + inputs.input_scatter[i][j].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
+                        }
+                        protocol_dict[inputs.protocol_name[i]] += 1;
+                        break;
+                      }
+                    }
+                  }
+              }
           }
             else{
                 for (i=0; i< inputs.input_array.length; i++){

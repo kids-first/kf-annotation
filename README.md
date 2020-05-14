@@ -396,11 +396,106 @@ outputs:
     outputSource: vep_annotate/output_vcf
 ```
 
+# Research subworkflows
+This section summarizes out efforts to create precalculated inputs for all possible SNPs and all known indels.
+
+## Dev scripts
+
+### dev/get_summarize_non_ACTG.py
+Uses a fasta reference file to create a bed files with only canonical base (ACTG) regions, and a summary of how many non-canonical there are. This bed file will be used in the subsequenct workflows for SNP precalculation.
+
+#### Inputs
+
+```python
+parser = argparse.ArgumentParser(description='Get ACTG-only bed, and non-ACTG summary')
+parser.add_argument('-r', '--reference-fasta', action='store', dest='fasta', help='Reference fasta to check')
+```
+
+#### Outputs
+`stdout`: Bed formatted file
+
+`stderr`: Progress and non-canonical base summary
+
+### dev/create_pseudo_vcf.py
+This script is used to create a simulated multi-alleic vcf file with ALL possible caninical SNPs based on the input reference.
+It should conform to vcf v4.0 standards.
+
+#### Inputs
+```python
+parser = argparse.ArgumentParser(description='Create simulated vcf')
+parser.add_argument('-r', '--reference-fasta', action='store', dest='fasta', help='Reference fasta to check')
+parser.add_argument('-i', '--reference-index', action='store', dest='fai', help='Reference fai to populate vcf header')
+```
+
+#### Outputs
+`stdout`: A vcf formatted file - recommend piping to bgzip to compress.
+
+`stderr`: Progress updates.
+
+
+### dev/convert_ncbi_to_chr.py
+Converts NCBI chromosome accession numbers to supported UCSC chromosome names
+
+#### Inputs
+```python
+parser = argparse.ArgumentParser(description='Convert vcf with NCBI acession numbers to chr entries compatible with existing refs')
+parser.add_argument('-v', '--reference-vcf', action='store', dest='vcf', help='Reference vcf to convert')
+parser.add_argument('-t', '--ncbi-tbl', action='store', dest='table', help='NCBI table found here: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_assembly_report.txt')
+```
+`ncbi-tbl` also provided in repo here: dev/GCF_000001405.39_GRCh38.p13_assembly_report.txt
+
+#### Outputs
+`stdout`: VCF with converted contigs. Recommend piping this output to bgzip.
+
+`stderr`: Progress updates
+
+### tools/bcftools_filter_vcf.cwl
+This tool can be used to include/exclude using bcftools expression notations.
+#### Inputs
+```yaml
+inputs:
+  input_vcf: File
+  include_expression: ['null', string]
+  exclude_expression: ['null', string]
+  output_basename: ['null', string]
+```
+To generate known indels, for `include_expression` use `TYPE!="snp"` to get all non-snps.
+
+#### Outputs
+```yaml
+outputs:
+  filtered_vcf:
+    type: File
+    outputBinding:
+      glob: '*.vcf.gz'
+    secondaryFiles: [.tbi]
+```
+
+### dev/add_contig_sim_sample_to_vcf.py
+The filtered and contig-converted vcf is not quite ready to be used as input for annotators.
+Need to add contigs to the header and `FORMAT` and `SAMPLE` fields
+#### Inputs
+```python
+parser = argparse.ArgumentParser(description='Add contigs to vcf header and faux FORMAT and SAMPLE fields')
+parser.add_argument('-v', '--vcf-file', action='store', dest='vcf', help='Input vcf to add formatting to')
+parser.add_argument('-i', '--fasta-index', action='store', dest='fai', help='Optional, if needed, use reference fasta index file to populate contig headers')
+parser.add_argument('-s', '--sample-name', action='store', dest='sample', help='Optional, create a custom sample name')
+parser.add_argument('-d', '--description', action='store', dest='desc', help='Optional, add description field. ## will be prepended, must be valid xml foramt')
+```
+#### Outputs
+`stdout`: VCF file with proper contig header, custom sample name, and optional description
+
+*Last step for making the known indels vcf should be to remove incompatible contigs; likely patch or non-UCSC*
+
 ## Split subworkflows
 In the same directory as the subworkflows above, are some heavy duty ones.
 Be sure to edit/adjust parallele instances before running.
 These can be costly and meant to be run on large inputs - i.e. a simulated snp vcf file with 9B snps!
 
+`scatter_bed` for all sub workflows obtained from running [dev/get_summarize_non_ACTG.py](#dev/get_summarize_non_ACTG.py)
+
+`input_vcf` for precomputing snps can be obtained using the [dev/create_pseudo_vcf.py](#dev/create_pseudo_vcf.py) step.
+For precomputed indel input, follow steps for [dev/convert_ncbi_to_chr.py](#dev/convert_ncbi_to_chr.py), [tools/bcftools_filter_vcf.cwl](#tools/bcftools_filter_vcf.cwl), and [dev/add_contig_sim_sample_to_vcf.py](#dev/add_contig_sim_sample_to_vcf.py)
 ### sub_workflows/kf_annovar_split_sub_wf.cwl
 
 #### Inputs
@@ -420,19 +515,27 @@ inputs:
   bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
   run_dbs: { type: 'boolean[]', doc: "Should the additional dbs be processed in this run of the tool for each protocol in protocol list? true/false"}
 ```
-Deviations from default:
+Deviations from default, SNP precompute:
  - `scatter_ct`: 200
  - `bands`: 1000000
  - `cores`: 40
  - `ram`: 128
 
-#### Outputs
+Known indel used defaults
 
+#### Outputs
+For SNP simulation:
 ```yaml
 outputs:
   ANNOVAR_results: 
     type: 'File[]'
     outputSource: merge_results/merged_annovar_txt
+```
+
+For Known Indels, scatter results output to a dir instead of time-consuming merge step:
+```yaml
+outputs:
+  ANNOVAR_results: {type: Directory, outputSource: output_to_dir/output_dirs}
 ```
 
 Latest precomputed data generation stats:
@@ -442,6 +545,11 @@ Latest precomputed data generation stats:
    - Run time: 6 hours, cost $287.90
    - Merge step 3 hours, ~$1.43
    - Max parallel instances set to 60, all spot
+ - ~62M known indels from dbSNP v153
+   - obtained from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz
+   - accession chromosome IDs convereted to UCSC comaptible names, with patch locations removed, added faux FORMAT and GT fields
+   - Max parallel instance set to 6
+   - Run time 48 minutes, cost $2.42
 
 ### sub_workflows/kf_snpEff_split_sub_wf.cwl
 
@@ -464,19 +572,27 @@ inputs:
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
 ```
 
-Deviations from default:
+Deviations from default, SNP run:
  - `scatter_ct`: 200
  - `bands`: 1000000
  - `cores`: 36
  - `ram`: 72
 
- #### Outputs
+Default value used for known indel run
 
+ #### Outputs
+For SNP simulation:
  ```yaml
  outputs:
   snpEff_results: 
     type: 'File[]'
     outputSource: merge_snpeff_vcf/zcat_merged_vcf
+```
+
+For Known Indels, scatter results output to a dir instead of time-consuming merge step:
+```yaml
+outputs:
+  snpEff_results: {type: Directory, outputSource: output_to_dir/output_dirs}
 ```
 
 Latest precomputed data generation stats:
@@ -489,6 +605,12 @@ Latest precomputed data generation stats:
    - Max parallel instance set to 8
    - Run time snpEff 5 hrs, $18.65
    - Merge (after merge optimization): 5.5 hours, $2.38
+ - ~62M known indels from dbSNP v153
+   - obtained from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz
+   - accession chromosome IDs convereted to UCSC comaptible names, with patch locations removed, added faux FORMAT and GT fields
+   - Max parallel instance set initially to 3, upped to 6
+   - All three transcript refs run (hg38, hg38kg, GRCh38.86)
+   - Run time: 4 hours, cost ~$9
 
 ### sub_workflows/kf_vep99_split_sub_wf.cwl
 
@@ -517,19 +639,26 @@ inputs:
   VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
 ```
 
-Deviations from default:
+Deviations from default for SNP run:
  - `scatter_ct`: 200
  - `bands`: 1000000
  - `cores`: 36
  - `ram`: 72
 
-### Outputs
+Defaults used for known indels
 
+### Outputs
+For SNP simulation:
 ```yaml
 outputs:
   VEP: 
     type: File
     outputSource: zcat_merge_vcf/zcat_merged_vcf
+```
+For Known Indels, scatter results output to a dir instead of time-consuming merge step:
+```yaml
+outputs:
+  vep_results: {type: Directory, outputSource: output_to_dir/output_dirs}
 ```
 
 Latest precomputed data generation stats:
@@ -539,3 +668,8 @@ Latest precomputed data generation stats:
    - Run time (including failed merge step): 2 days 2 hours, cost $478
    - Est run time and cost without failed merge: 25 hrs, $474
    - Merge step after optimization: 22 hrs, $9.62
+ - ~62M known indels from dbSNP v153
+   - obtained from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz
+   - accession chromosome IDs convereted to UCSC comaptible names, with patch locations removed, added faux FORMAT and GT fields
+   - Max parallel instances set to 5
+   - Run time 4 hours, cost $8.45
