@@ -81,10 +81,11 @@ inputs:
         items:
           type: array
           items: File
-  input_array: 'File[]?'
-  protocol_name: 'string[]?'
+    doc: "Usually from a pipeline step, protocol x input vcf scatter creating 2D array input"
+  input_array: {type: 'File[]?', doc: "If not 2D scatter, single vcf scatter input tpyical, and this array should be populated instead"}
+  protocol_name: {type: 'string[]?', doc: "If input_scatter, protocol_name array used in scatter"}
   output_basename: string
-  tool_name: { type: string, doc: "String of tool name that will be used in the output filenames"}
+  tool_name: { type: string, doc: "String of tool name that will be used in the output dirnames"}
 
 outputs:
   output_dirs:
