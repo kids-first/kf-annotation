@@ -90,6 +90,7 @@ arguments:
       -thread $(inputs.cores)
       -maxgenethread $(inputs.cores)
       -remove
+      -otherinfo
       -nastring .
       && bgzip $(inputs.input_av.nameroot).$(inputs.tool_name).$(inputs.protocol_name).hg38_multianno.txt
 

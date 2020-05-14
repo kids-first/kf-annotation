@@ -130,6 +130,9 @@ arguments:
       --canonical
       --protein
       --assembly GRCh38
+      --allele_number
+      --dont_skip
+      --allow_non_variant
       ${if(inputs.cache) {return "--dir_cache $PWD --cache --merged"} else {return ""}}
       ${if(inputs.run_cache_existing) {return "--check_existing"} else { return ""}}
       ${if(inputs.run_cache_af) {return "--af_1kg --af_esp --af_gnomad"} else { return ""}}

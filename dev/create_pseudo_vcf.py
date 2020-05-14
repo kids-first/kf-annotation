@@ -44,4 +44,3 @@ for line in open(args.fasta):
                 sys.stdout.write("\t".join([chrom, str(pos), ".", line[i], snp_dict[line[i]], ".\t.\t.", "GT", "0/1"]) + "\n")
             pos += 1
     x += 1
-# out_vcf.close()

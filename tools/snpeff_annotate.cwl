@@ -66,7 +66,8 @@ inputs:
   ram: {type: int?, default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
   input_vcf: { type: File,  secondaryFiles: [.tbi] , doc: "VCF file (with associated index) to be annotated" }
   reference_name: { type: { type: enum, name: reference_name, symbols: [hg38,hg38kg,GRCh38.86] }, doc: "Reference genome used to generate input VCF"}
-  output_basename: { type: string, doc: "String that will be used in the output filenames" }
+  # reference_name: {type: string, doc: "tx ref to run"}
+  output_basename: { type: string?, doc: "String that will be used in the output filenames" }
   tool_name: { type: string, doc: "Tool name to be used in output filenames" }
 
 outputs:

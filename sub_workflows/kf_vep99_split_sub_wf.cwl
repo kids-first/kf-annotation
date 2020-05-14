@@ -8,7 +8,6 @@ requirements:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  header_file: {type: File, doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file"}
   output_basename: string
   tool_name: string
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
@@ -28,9 +27,7 @@ inputs:
   VEP_dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
 
 outputs:
-  VEP: 
-    type: File
-    outputSource: zcat_merge_vcf/zcat_merged_vcf
+  vep_results: {type: Directory, outputSource: output_to_dir/output_dirs}
 steps:
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
@@ -69,19 +66,16 @@ steps:
       tool_name: tool_name
     scatter: input_vcf
     out: [output_vcf, output_html, warn_txt]
-  zcat_merge_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.2xlarge;ebs-gp2;2048
-    run: ../tools/zcat_vcf.cwl
+  output_to_dir:
+    run: ../tools/output_to_dir.cwl
     in:
-      input_vcfs: vep_annotate/output_vcf
-      header_file: header_file
-      output_basename: output_basename
+      input_array: vep_annotate/output_vcf
       tool_name: tool_name
-    out: [zcat_merged_vcf]
+      output_basename: output_basename
+    out: [output_dirs]
+
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 25
+    value: 5
