@@ -495,7 +495,9 @@ These can be costly and meant to be run on large inputs - i.e. a simulated snp v
 `scatter_bed` for all sub workflows obtained from running [dev/get_summarize_non_ACTG.py](#dev/get_summarize_non_ACTG.py)
 
 `input_vcf` for precomputing snps can be obtained using the [dev/create_pseudo_vcf.py](#dev/create_pseudo_vcf.py) step.
-For precomputed indel input, follow steps for [dev/convert_ncbi_to_chr.py](#dev/convert_ncbi_to_chr.py), [tools/bcftools_filter_vcf.cwl](#tools/bcftools_filter_vcf.cwl), and [dev/add_contig_sim_sample_to_vcf.py](#dev/add_contig_sim_sample_to_vcf.py)
+For precomputed indel input, first get the known indels.
+For this run, we used the data from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz.
+Follow steps for [dev/convert_ncbi_to_chr.py](#dev/convert_ncbi_to_chr.py), [tools/bcftools_filter_vcf.cwl](#tools/bcftools_filter_vcf.cwl), and [dev/add_contig_sim_sample_to_vcf.py](#dev/add_contig_sim_sample_to_vcf.py) to convert the file to an annotatable format
 ### sub_workflows/kf_annovar_split_sub_wf.cwl
 
 #### Inputs
@@ -546,8 +548,6 @@ Latest precomputed data generation stats:
    - Merge step 3 hours, ~$1.43
    - Max parallel instances set to 60, all spot
  - ~62M known indels from dbSNP v153
-   - obtained from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz
-   - accession chromosome IDs convereted to UCSC comaptible names, with patch locations removed, added faux FORMAT and GT fields
    - Max parallel instance set to 6
    - Run time 48 minutes, cost $2.42
 
@@ -606,8 +606,6 @@ Latest precomputed data generation stats:
    - Run time snpEff 5 hrs, $18.65
    - Merge (after merge optimization): 5.5 hours, $2.38
  - ~62M known indels from dbSNP v153
-   - obtained from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz
-   - accession chromosome IDs convereted to UCSC comaptible names, with patch locations removed, added faux FORMAT and GT fields
    - Max parallel instance set initially to 3, upped to 6
    - All three transcript refs run (hg38, hg38kg, GRCh38.86)
    - Run time: 4 hours, cost ~$9
@@ -669,7 +667,5 @@ Latest precomputed data generation stats:
    - Est run time and cost without failed merge: 25 hrs, $474
    - Merge step after optimization: 22 hrs, $9.62
  - ~62M known indels from dbSNP v153
-   - obtained from https://ftp.ncbi.nih.gov/snp/redesign/latest_release/VCF/GCF_000001405.38.gz
-   - accession chromosome IDs convereted to UCSC comaptible names, with patch locations removed, added faux FORMAT and GT fields
    - Max parallel instances set to 5
    - Run time 4 hours, cost $8.45
