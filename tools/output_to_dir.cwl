@@ -61,13 +61,13 @@ arguments:
         // else if just input file array, just output to result_dir
         else{
           for (i=0; i< inputs.input_array.length; i++){
-              cmd += "echo \"cp " + inputs.input_array[i].path + " " + result_dir + "/" + i.toString()
-              + "_" + inputs.input_array[i].basename + "\" >> cmd_list.txt;";
-              if (inputs.input_array[i].secondaryFiles){
-                cmd += "echo \"cp " + inputs.input_array[i].secondaryFiles[0].path + " " + result_dir + "/" + i.toString()
-              + "_" + inputs.input_array[i].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
-              }
-           }
+            cmd += "echo \"cp " + inputs.input_array[i].path + " " + result_dir + "/" + i.toString()
+            + "_" + inputs.input_array[i].basename + "\" >> cmd_list.txt;";
+            if (inputs.input_array[i].secondaryFiles){
+              cmd += "echo \"cp " + inputs.input_array[i].secondaryFiles[0].path + " " + result_dir + "/" + i.toString()
+            + "_" + inputs.input_array[i].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
+            }
+          }
         }
         return cmd;
       }
