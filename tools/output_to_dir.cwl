@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: merge_annovar_outputs
+id: merge_outputs_to_dir
 doc: "Merges outputs from scatter jobs and outputs to subdirs"
 requirements:
   - class: ShellCommandRequirement
