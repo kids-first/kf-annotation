@@ -16,6 +16,7 @@ arguments:
       set -eo pipefail
       
       ${
+        // Convert to intervalist for prodcessing if not intervallist format already
         var cmd = "";
         if (inputs.interval_list.nameext == '.interval_list'){
           cmd = "LIST=" + inputs.interval_list.path + ";";
@@ -26,6 +27,7 @@ arguments:
           + ".interval_list;";
 
         }
+        // Override BANDS if exome, no splitting of intervals should be done in that scenario
         if (inputs.exome_flag == "Y"){
             cmd += "BANDS=0;";
           }
@@ -37,17 +39,28 @@ arguments:
       }
 
       ${
-        if (inputs.break_by_chr == "N"){
+        // Break by chr, or scatter
+        if (inputs.break_by_chr == "N" && inputs.scatter_ct > 1){
           var cmd = "/gatk IntervalListTools --java-options \"-Xmx2000m\" --SCATTER_COUNT=" + inputs.scatter_ct + " --SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=$BANDS --INPUT=$LIST --OUTPUT=.;"
           cmd += "CT=`find . -name 'temp_0*' | wc -l`;";
           cmd += "seq -f \"%04g\" $CT | xargs -I N -P 4 /gatk IntervalListToBed --java-options -Xmx100m -I temp_N_of_$CT/scattered.interval_list -O temp_N_of_$CT/scattered.interval_list.N.bed;";
           cmd += "mv temp_0*/*.bed .;";
         }
-        else{
+        else if (inputs.break_by_chr != "N"){
           cmd = "mkdir intvl_by_chr;"
           cmd += "/gatk IntervalListTools --java-options \"-Xmx2000m\" --SCATTER_COUNT=" + inputs.scatter_ct + " --SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=$BANDS --INPUT=$LIST --OUTPUT=intvl_by_chr/scattered.interval_list;";
           cmd += "/gatk IntervalListToBed --java-options -Xmx100m -I intvl_by_chr/scattered.interval_list -O intvl_by_chr/scattered.interval_list.bed;"
           cmd += "cut -f 1 intvl_by_chr/scattered.interval_list.bed | uniq | xargs -ICM sh -c 'grep -P \"CM\\t\" intvl_by_chr/scattered.interval_list.bed > CM_intervals.bed';";
+        }
+        // If scatter is 1, convert to bed if needed and output that
+        else{
+          var cmd = "";
+          if (inputs.interval_list.nameext == '.bed'){
+            cmd = "cp " + inputs.interval_list.path + " .;";
+          }
+          else{
+            cmd = "/gatk IntervalListToBed --java-options -Xmx100m -I " + inputs.interval_list.path + " -O " + inputs.interval_list.nameroot + ".bed;";
+          }
         }
         return cmd;
       }

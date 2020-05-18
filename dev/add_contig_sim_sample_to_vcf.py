@@ -24,7 +24,7 @@ for line in in_vcf:
             # output contig headers: ##contig=<ID=chr1,length=248956422>
             for chrom in open(args.fai):
                 c_info = chrom.split('\t')
-                sys.stdout.write("##contig=<ID=" + c_info[0] + ", length=" + c_info[1] + ">\n")
+                sys.stdout.write("##contig=<ID=" + c_info[0] + ",length=" + c_info[1] + ">\n")
         if args.desc:
             sys.stdout.write("##" + args.desc + "\n")
         sys.stdout.write(decoded + "\tFORMAT\t" + sample_name +  "\n")

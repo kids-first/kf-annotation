@@ -149,7 +149,7 @@ inputs:
   ram: {type: int?, default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
-  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
   run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
