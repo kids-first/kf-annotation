@@ -80,7 +80,7 @@ steps:
   output_to_dir:
     run: ../tools/output_to_dir.cwl
     in:
-      input_array: vep_annotate/output_vcf
+      one_d_in: vep_annotate/output_vcf
       tool_name: tool_name
       output_basename: output_basename
     out: [output_dirs]

@@ -75,7 +75,7 @@ steps:
   output_to_dir:
     run: ../tools/output_to_dir.cwl
     in:
-      input_scatter: run_snpeff/output_vcf
+      two_d_in: run_snpeff/output_vcf
       protocol_name: snpeff_ref_name
       tool_name: wf_tool_name
       output_basename: output_basename

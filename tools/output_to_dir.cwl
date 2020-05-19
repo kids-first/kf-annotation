@@ -29,7 +29,7 @@ arguments:
         //map will track each time a file of protocol type is seen for file naming purposes
         var protocol_dict = new Object();
         // If getting inputs jobs scstter on protocol AND file input, create protocol subdirs
-        if(inputs.input_scatter != null){
+        if(inputs.two_d_in != null){
           for (i = 0; i < inputs.protocol_name.length; i++) {
             out_dirs.push(result_dir + "/" + inputs.protocol_name[i]);
             cmd += "mkdir " + out_dirs[i] + ";";
@@ -37,19 +37,19 @@ arguments:
           }
           // iterate through 2D array
           i = 0;
-          for (i=0; i< inputs.input_scatter.length; i++){
+          for (i=0; i< inputs.two_d_in.length; i++){
             var j = 0;
-            for (j = 0; j < inputs.input_scatter[i].length; j++){
+            for (j = 0; j < inputs.two_d_in[i].length; j++){
               var k = 0;
               // Look for protocol name in basename to assign output location
               for (k = 0; k < out_dirs.length; k++){
-                if (inputs.input_scatter[i][j].basename.includes(inputs.protocol_name[k])){
-                  cmd += "echo \"cp " + inputs.input_scatter[i][j].path + " " + out_dirs[k] + "/" + protocol_dict[inputs.protocol_name[k]].toString()
-                  + "_" + inputs.input_scatter[i][j].basename + "\" >> cmd_list.txt;";
+                if (inputs.two_d_in[i][j].basename.includes(inputs.protocol_name[k])){
+                  cmd += "echo \"cp " + inputs.two_d_in[i][j].path + " " + out_dirs[k] + "/" + protocol_dict[inputs.protocol_name[k]].toString()
+                  + "_" + inputs.two_d_in[i][j].basename + "\" >> cmd_list.txt;";
                   // Also copy associated secondaryFiles - assumes only one!
-                  if (inputs.input_scatter[i][j].secondaryFiles){
-                    cmd += "echo \"cp " + inputs.input_scatter[i][j].secondaryFiles[0].path + " " + out_dirs[k] + "/" + protocol_dict[inputs.protocol_name[k]].toString()
-                  + "_" + inputs.input_scatter[i][j].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
+                  if (inputs.two_d_in[i][j].secondaryFiles){
+                    cmd += "echo \"cp " + inputs.two_d_in[i][j].secondaryFiles[0].path + " " + out_dirs[k] + "/" + protocol_dict[inputs.protocol_name[k]].toString()
+                  + "_" + inputs.two_d_in[i][j].secondaryFiles[0].basename + "\" >> cmd_list.txt;";
                   }
                   protocol_dict[inputs.protocol_name[i]] += 1;
                   break;
@@ -74,16 +74,26 @@ arguments:
 
       cat cmd_list.txt | xargs -ICMD -P 8 /bin/bash -c "CMD"
 inputs:
-  input_scatter:
+  three_d_in:
+    type:
+      - 'null'
+      - type: array
+        items:
+          type: array
+          items:
+            type: array
+            items: File
+    doc: "Usually from a pipeline step, protocol x input vcf scatter creating 3D array input like annovar"
+  two_d_in:
     type:
       - 'null'
       - type: array
         items:
           type: array
           items: File
-    doc: "Usually from a pipeline step, protocol x input vcf scatter creating 2D array input"
-  input_array: {type: 'File[]?', doc: "If not 2D scatter, single vcf scatter input tpyical, and this array should be populated instead"}
-  protocol_name: {type: 'string[]?', doc: "If input_scatter, protocol_name array used in scatter"}
+    doc: "Usually from a pipeline step, protocol x input vcf scatter creating 2D array input like snpEff"
+  one_d_in: {type: 'File[]?', doc: "If coming from a scatter, like VEP, use this"}
+  protocol_name: {type: 'string[]?', doc: "If two_d_in, protocol_name array used in scatter"}
   output_basename: string
   tool_name: { type: string, doc: "String of tool name that will be used in the output dirnames"}
 
