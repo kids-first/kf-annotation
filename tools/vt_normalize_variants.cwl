@@ -21,10 +21,10 @@ arguments:
       ${
         var cmd = "";
         if (inputs.run_norm_flag){
-          cmd = "/vt/vt decompose " + inputs.input_vcf.path + " > " +  inputs.output_basename + "." + inputs.tool_name + ".vt.decomp.vcf || exit 1;";
+          cmd = "bgzip -dc --threads 3 " + inputs.input_vcf.path + " | /vt/vt decompose /dev/stdin > " +  inputs.output_basename + "." + inputs.tool_name + ".vt.decomp.vcf || exit 1;";
           cmd += "/vt/vt normalize -r " + inputs.indexed_reference_fasta.path + " " + inputs.output_basename + "." + inputs.tool_name
           + ".vt.decomp.vcf -m > " + inputs.output_basename + "." + inputs.tool_name + ".vt.decomp.norm.vcf || exit 1;";
-          cmd += "bgzip " + inputs.output_basename + "." + inputs.tool_name + ".vt.decomp.norm.vcf || exit 1;";
+          cmd += "bgzip --threads 4 " + inputs.output_basename + "." + inputs.tool_name + ".vt.decomp.norm.vcf || exit 1;";
           cmd += "tabix " + inputs.output_basename + "." + inputs.tool_name + ".vt.decomp.norm.vcf.gz || exit 1;";
         }
         else{
