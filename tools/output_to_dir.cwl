@@ -9,7 +9,7 @@ requirements:
     - |-
       var place_file = function(f_obj, out_dirs, protocol_array, protocol_dict){
           var p = 0;
-          var cp_cmd = "echo \"echo Processing file " + f_obj.path + "\" >> cmd_list.txt;";
+          var cp_cmd = "";
           // Look for protocol name in basename to assign output location
           for (p = 0; p < out_dirs.length; p++){
             if (f_obj.basename.includes(inputs.protocol_name[p])){
