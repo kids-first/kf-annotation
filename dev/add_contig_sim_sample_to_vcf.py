@@ -20,11 +20,12 @@ if args.sample:
 for line in in_vcf:
     decoded = line.decode().rstrip('\n')
     if decoded[0:6] == "#CHROM":
+        sys.stdout.write("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"GT\">\n")
         if args.fai:
             # output contig headers: ##contig=<ID=chr1,length=248956422>
             for chrom in open(args.fai):
                 c_info = chrom.split('\t')
-                sys.stdout.write("##contig=<ID=" + c_info[0] + ", length=" + c_info[1] + ">\n")
+                sys.stdout.write("##contig=<ID=" + c_info[0] + ",length=" + c_info[1] + ">\n")
         if args.desc:
             sys.stdout.write("##" + args.desc + "\n")
         sys.stdout.write(decoded + "\tFORMAT\t" + sample_name +  "\n")
@@ -34,4 +35,4 @@ for line in in_vcf:
 
 for line in in_vcf:
     decoded = line.decode().rstrip('\n')
-    sys.stdout.write(decoded + "\tGT\t0/1\n")
+    sys.stdout.write(decoded + "\tGT\t0/0\n")

@@ -12,12 +12,13 @@ inputs:
   tool_name: string
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
-  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  run_vt_norm: {type: boolean?, doc: "Run vt decompose and normalize before annotation", default: true}
+  reference: { type: 'File?',  secondaryFiles: [.fai] , doc: "Fasta genome assembly with indexes" }
   reference_dict : File
   scatter_bed: File
   scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
   bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
-  VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
+  VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: false }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
   VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
@@ -47,10 +48,20 @@ steps:
       input_bed_file: gatk_intervallisttools/output
     scatter: [input_bed_file]
     out: [intersected_vcf]
+  vt_norm_vcf:
+    run: ../tools/vt_normalize_variants.cwl
+    in:
+      input_vcf: bedtools_split_vcf/intersected_vcf
+      indexed_reference_fasta: reference
+      output_basename: output_basename
+      tool_name: tool_name
+      run_norm_flag: run_vt_norm
+    scatter: input_vcf
+    out: [vt_normalize_vcf]
   vep_annotate:
     run: ../tools/variant_effect_predictor99.cwl
     in:
-      input_vcf: bedtools_split_vcf/intersected_vcf
+      input_vcf: vt_norm_vcf/vt_normalize_vcf
       reference: reference
       cores: cores
       ram: ram
@@ -69,7 +80,7 @@ steps:
   output_to_dir:
     run: ../tools/output_to_dir.cwl
     in:
-      input_array: vep_annotate/output_vcf
+      one_d_in: vep_annotate/output_vcf
       tool_name: tool_name
       output_basename: output_basename
     out: [output_dirs]

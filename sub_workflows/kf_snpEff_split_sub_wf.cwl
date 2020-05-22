@@ -8,7 +8,9 @@ requirements:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
+  reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   reference_dict: File
+  run_vt_norm: {type: boolean?, doc: "Run vt decompose and normalize before annotation", default: true}
   snpeff_ref_name:
     type:
       - "null"
@@ -47,6 +49,16 @@ steps:
       input_bed_file: gatk_intervallisttools/output
     scatter: [input_bed_file]
     out: [intersected_vcf]
+  vt_norm_vcf:
+    run: ../tools/vt_normalize_variants.cwl
+    in:
+      input_vcf: bedtools_split_vcf/intersected_vcf
+      indexed_reference_fasta: reference
+      output_basename: output_basename
+      tool_name: wf_tool_name
+      run_norm_flag: run_vt_norm
+    scatter: input_vcf
+    out: [vt_normalize_vcf]
   run_snpeff: 
     run: ../tools/snpeff_annotate.cwl
     in:
@@ -54,7 +66,7 @@ steps:
       reference_name: snpeff_ref_name
       cores: cores
       ram: ram
-      input_vcf: bedtools_split_vcf/intersected_vcf
+      input_vcf: vt_norm_vcf/vt_normalize_vcf
       output_basename: output_basename
       tool_name: wf_tool_name
     scatter: [reference_name, input_vcf]
@@ -63,7 +75,7 @@ steps:
   output_to_dir:
     run: ../tools/output_to_dir.cwl
     in:
-      input_scatter: run_snpeff/output_vcf
+      two_d_in: run_snpeff/output_vcf
       protocol_name: snpeff_ref_name
       tool_name: wf_tool_name
       output_basename: output_basename

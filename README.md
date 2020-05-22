@@ -480,10 +480,44 @@ parser = argparse.ArgumentParser(description='Add contigs to vcf header and faux
 parser.add_argument('-v', '--vcf-file', action='store', dest='vcf', help='Input vcf to add formatting to')
 parser.add_argument('-i', '--fasta-index', action='store', dest='fai', help='Optional, if needed, use reference fasta index file to populate contig headers')
 parser.add_argument('-s', '--sample-name', action='store', dest='sample', help='Optional, create a custom sample name')
-parser.add_argument('-d', '--description', action='store', dest='desc', help='Optional, add description field. ## will be prepended, must be valid xml foramt')
+parser.add_argument('-d', '--description', action='store', dest='desc', help='Optional, add description field. ## will be prepended, must be valid xml format')
 ```
 #### Outputs
 `stdout`: VCF file with proper contig header, custom sample name, and optional description
+
+### tools/vt_normalize_variants.cwl
+Normalize vcf using `vt` (variant tool) by running `decompose` (split up multi-allelics into new lines) and `normalize` (left align indels and correct split out alleles).
+This helps make vcfs more compatible for comparison, critical for loading into a database.
+
+#### Inputs
+```yaml
+inputs:
+    input_vcf: {type: File, secondaryFiles: ['.tbi']}
+    indexed_reference_fasta: {type: File?, secondaryFiles: ['.fai'], doc: "Needed if run_norm_flag true"}
+    output_basename: {type: string?, doc: "Needed if run_norm_flag true"}
+    tool_name: {type: string?, doc: "Needed if run_norm_flag true"}
+    run_norm_flag: {type: boolean, doc: "If false, skip this step and pass the input file though", default: true}
+```
+Can be skipped if part of a wf in which the input is already normed.
+
+#### Outputs
+```yaml
+outputs:
+  vt_normalize_vcf:
+    type: File
+    outputBinding:
+      glob: '*.vcf.gz'
+      outputEval: >-
+        ${
+          if (inputs.run_norm_flag){
+              return self;
+          }
+          else{
+              return inputs.input_vcf
+          }
+        }
+    secondaryFiles: ['.tbi']
+```
 
 *Last step for making the known indels vcf should be to remove incompatible contigs; likely patch or non-UCSC*
 
@@ -506,11 +540,20 @@ Follow steps for [dev/convert_ncbi_to_chr.py](#dev/convert_ncbi_to_chr.py), [too
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
+  run_vt_norm: {type: boolean?, doc: "Run vt decompose and normalize before annotation", default: true}
   wf_tool_name: string
-  protocol_list: {type: 'string[]', doc: "List of protocols to scatter on. See tool enum for choices"}
+  protocol_list:
+    type:
+      - "null"
+      - type: array
+        items:
+            type: enum
+            name: protocol_list
+            symbols: [ensGene, knownGene, refGene]
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
+  reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   reference_dict : File
   scatter_bed: File
   scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
@@ -558,10 +601,17 @@ Latest precomputed data generation stats:
 ```yaml
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  header_file: {type: 'File[]', doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file. Really only this part will change: ##SnpEffCmd=\"SnpEff  hg38kg"}
+  reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   reference_dict: File
-  snpeff_ref_name: {type: 'string[]', doc: "List of snpEff refs to run. Loaded cache must have all that you plan to run."}
-  snpeff_merge_ext: {type: 'string[]', doc: "For file naming purposes, tool name + ref names, in same order as input ref names"}
+  run_vt_norm: {type: boolean?, doc: "Run vt decompose and normalize before annotation", default: true}
+  snpeff_ref_name:
+    type:
+      - "null"
+      - type: array
+        items:
+            type: enum
+            name: snpeff_ref_name
+            symbols: [hg38,hg38kg,GRCh38.86]
   scatter_bed: File
   scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
   bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
@@ -617,17 +667,17 @@ Latest precomputed data generation stats:
 ```yaml
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  header_file: {type: File, doc: "File with header of VCFs. Basically a hack to avoid guessing/parsing the file"}
   output_basename: string
   tool_name: string
   cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
-  reference: { type: 'File?',  secondaryFiles: [.fai,.gzi], doc: "Fasta genome assembly with indexes" }
+  run_vt_norm: {type: boolean?, doc: "Run vt decompose and normalize before annotation", default: true}
+  reference: { type: 'File?',  secondaryFiles: [.fai] , doc: "Fasta genome assembly with indexes" }
   reference_dict : File
   scatter_bed: File
   scatter_ct: {type: int?, default: 50, doc: "Number of files to split scatter bed into"}
   bands: {type: int?, default: 80000000, doc: "Max bases to put in an interval. Set high for WGS, can set lower if snps only"}
-  VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
+  VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: false }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
   VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
