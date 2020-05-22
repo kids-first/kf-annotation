@@ -102,6 +102,7 @@ steps:
       input_vcf: bcftools_isec/intersected_vcf
       tool_name: tool_name
       run_dbs: {default: false}
+      output_basename: output_basename
     scatter: [protocol_name]
     out: [anno_txt, anno_vcf]
   run_snpeff: 
