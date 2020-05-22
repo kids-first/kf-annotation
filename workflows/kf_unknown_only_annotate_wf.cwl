@@ -41,8 +41,8 @@ inputs:
   VEP_run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: false }
   VEP_cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   VEP_buffer_size: {type: int?, default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
-  VEP_run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
-  VEP_run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  VEP_run_cache_existing: { type: boolean?, doc: "Run the check_existing flag for cache", default: false }
+  VEP_run_cache_af: { type: boolean?, doc: "Run the allele frequency flags for cache", default: false}
 
 outputs:
   snpEff_results:
