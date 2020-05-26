@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kf_caller_only_wf
+id: kf_unknown_var_annot_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: SubworkflowFeatureRequirement
@@ -8,6 +8,7 @@ requirements:
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   reference_vcf: {type: File, secondaryFiles: [.tbi], doc: "VCF to use as a reference to isolate unknown variants in input_vcf"}
+  reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   output_basename: string
   tool_name: string
   strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN or INFO/CSQ"}
@@ -35,6 +36,7 @@ inputs:
   ANNOVAR_cache: { type: File, doc: "TAR GZ file with RefGene, KnownGene, and EnsGene reference annotations" }
   ANNOVAR_ram: {type: int?, default: 32, doc: "May need to increase this value depending on the size/complexity of input"}
   ANNOVAR_cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  ANNOVAR_run_dbs: {type: 'boolean[]', doc: "Should the additional dbs be processed in this run of the tool for each protocol in protocol list? true/false"}
   reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   VEP_cores: {type: int?, default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   VEP_ram: {type: int?, default: 32, doc: "In GB. May need to increase this value depending on the size/complexity of input"}
@@ -54,7 +56,7 @@ outputs:
   VEP_results:
     type: File
     outputSource: run_VEP/output_vcf
-  normalized_preprocess_vcf:
+  normalized_preannotated_vcf:
     type: File
     outputSource: vt_normalize/vt_normalize_vcf
 
@@ -82,7 +84,7 @@ steps:
     doc: "Optionally filter out snps, etc"
     run: ../tools/bcftools_filter_vcf.cwl
     in:
-      input_vcf: bcftools_strip_info/stripped_vcf
+      input_vcf: vt_normalize/vt_normalize_vcf
       include_expression: include_expression
       output_basename: output_basename
     out: [filtered_vcf]
@@ -104,7 +106,7 @@ steps:
       protocol_name: protocol_list
       input_vcf: bcftools_isec/intersected_vcf
       tool_name: tool_name
-      run_dbs: {default: false}
+      run_dbs: ANNOVAR_run_dbs
       output_basename: output_basename
     scatter: [protocol_name]
     out: [anno_txt, anno_vcf]
