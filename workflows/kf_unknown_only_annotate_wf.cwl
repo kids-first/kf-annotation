@@ -54,6 +54,9 @@ outputs:
   VEP_results:
     type: File
     outputSource: run_VEP/output_vcf
+  normalized_preprocess_vcf:
+    type: File
+    outputSource: vt_normalize/vt_normalize_vcf
 
 steps:
   bcftools_strip_info:
