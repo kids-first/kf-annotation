@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: vt_normalize_vcf
+id: vt_normalize_variants
 doc: "Normalizes a vcf using vt decompose and normalize. If part of a pipe, can skip this run when needed"
 requirements:
   - class: ShellCommandRequirement
