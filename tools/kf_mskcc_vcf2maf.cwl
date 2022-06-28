@@ -38,8 +38,8 @@ inputs:
     inputBinding: {position: 2, prefix: "--ref-fasta"} }
   input_vcf: { type: 'File', secondaryFiles: [.tbi], doc: "VEP annotated vcf file." }
   output_basename: string
-  tumor_id: { type: string, inputBinding: {position: 3, prefix: "tumor-id"} }
-  normal_id: { type: string, inputBinding: {position: 4, prefix: "normal-id"} }
+  tumor_id: { type: string, inputBinding: {position: 3, prefix: "--tumor-id"} }
+  normal_id: { type: string, inputBinding: {position: 4, prefix: "--normal-id"} }
   tool_name: string
   ref_build: { type: 'string?', doc: "Genome ref build used, should line up with cache.", default: "GRCh38",
     inputBinding: {position: 5, prefix: "--ncbi-build"} }
@@ -47,6 +47,8 @@ inputs:
     inputBinding: {position: 6, prefix: "--retain-info"} }
   retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep",
     inputBinding: {position: 6, prefix: "--retain-fmt"} }
+  retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF",
+    inputBinding: {position: 6, prefix: "--retain-ann"} }
   custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK",
     inputBinding: {position: 7, prefix: "--custom-enst"} }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
